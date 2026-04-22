@@ -116,6 +116,9 @@ xsprintf.end_printf:
 
     vzeroupper
 
+    ; add trailing zero
+    mov byte [rsi], 0
+
     ; restore rsp
     mov rax, rbp
     lea rsp, [rsp + LOCAL_VARIABLES_SIZE]
@@ -206,6 +209,10 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
 
     vptest ymm5, ymm5
     jnz .found_in_beginning
+
+    ; now, in rsi is located "32 - rcx" right bytes
+    add rsi, 32
+    sub rsi, rcx
     
     ; serach for zero
 .search_small_loop:

@@ -158,18 +158,15 @@ LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     vpblendvb ymm8, ymm8, ymm0, ymm6 ; mix real data and new data
     vmovdqu [rsi + rcx], ymm8        ; store result 
 
-    vptest ymm7, ymm7 ; check if there is any '\0' or '%'
-    jz .search_small_loop
-    
-    ; now, we had found symbol, get it's position.
-
     ; use add becouse rcx = - offset
     ; move rsi forward [becouse in '.found' it will be moved backward]
     lea rsi, [rsi + rcx + 32]
 
-    ; get answer position
+    vptest ymm7, ymm7 ; check if there is any '\0' or '%'
+    jz .search_small_loop
+    
+    ; now, we had found symbol, get it's position.
     vpmovmskb eax, ymm7
-
     ; rcx - is shifted, it is ok
     jmp .found ; go to found
     
