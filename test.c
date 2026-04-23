@@ -1,69 +1,126 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdint.h>
-#include <x86intrin.h> // Интринсики для x86
 #include "xprintf.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 
-#define ITERATIONS 10000000
-#define WARMUP 100000
 
-#define FMT_STRING "%cAboba %c AAAAAAuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeuuuuuuuuuAAAAAAAAAAAAAAAAAAAAAAAAAAAA %c%caaaa%c"
-#define FMT_DATA 'Z', 'Z', 'Z', 'A', 'B', 'C', 'D'
+int total_errors = 0, total_warings = 0, total_tests = 0;
 
-int compare_uint64(const void *a, const void *b) {
-    uint64_t arg1 = *(const uint64_t*)a;
-    uint64_t arg2 = *(const uint64_t*)b;
-    return (arg1 > arg2) - (arg1 < arg2);
+
+void test_error(int allow_to_fail, const char *format, const char *a, const char *b)
+{
+    total_tests++;
+    if (strcmp(a, b) == 0)
+    {
+        printf("\033[0;32mTest passed...\033[0m\n");
+        return;
+    }
+
+    if (allow_to_fail)
+    {
+        total_warings++;
+        printf("\033[0;33mWaring: Test <%s> failed [allowed to fail]\033[0m\n", format);
+        printf("xsprintf: [wrong]\n<%s>\nsprintf: [correct]\n<%s>\n", a, b);
+        return;
+    }
+    total_errors++;
+
+    printf("\033[0;31mError at test: <%s>\033[0m\n", format);
+    printf("xsprintf: [wrong]\n<%s>\nsprintf: [correct]\n<%s>\n", a, b);
 }
 
-void run_test(const char* name, int (*func)(char*, const char*, ...)) {
-    char buf[1024];
-    uint64_t *cycles = malloc(ITERATIONS * sizeof(uint64_t));
-    struct timespec start, end;
-    unsigned int ui;
 
-    for(int i = 0; i < WARMUP; i++) {
-        func(buf, FMT_STRING, FMT_DATA);
+
+#define TEST(X, buf_size, format, ...) \
+    { \
+        char buf1[buf_size], buf2[buf_size]; \
+        xsprintf(buf1, format __VA_OPT__(,) __VA_ARGS__); \
+        sprintf(buf2, format __VA_OPT__(,) __VA_ARGS__); \
+        test_error(X, format, buf1, buf2); \
     }
+#define TEST_A(...) TEST(0, __VA_ARGS__)
+#define TEST_B(...) TEST(1, __VA_ARGS__)
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-    for(int i = 0; i < ITERATIONS; i++) {
-        func(buf, FMT_STRING, FMT_DATA);
+int main()
+{    
+    xprintf("Hello %% %corld%c, |%-10s|\n", 'W', '!', "What?");
+
+    // %c
+    TEST_A(1024, "%c", 'Z')
+    TEST_A(1024, "%c%c", 'A', 'B')
+    TEST_A(1024, "aa%caa", 'Z')
+    TEST_A(1024, "%caa", 'Z')
+    TEST_A(1024, "aa%c", 'Z')
+    TEST_A(1024, "aa%caa%caa", 'Z', 'Z')
+    TEST_A(1024, "aa%caaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%caa", 'Z', 'X')
+    
+    TEST_B(1024, "aa%0100caa", 'Z')
+    TEST_B(1024, "aa%-0100caa", 'Z')
+    TEST_B(1024, "aa%0-100caa", 'Z')
+
+    // %%
+    TEST_A(1024, "oo%%oo")
+
+    // formats
+    TEST_A(1024, "")
+    TEST_A(1024, "ooo")
+    TEST_A(1024, "o00000000000000000000000000000000000000000oo")
+    TEST_A(1024, "%10c", 'Z')
+    TEST_A(1024, "aa%10caa", 'Z')
+    TEST_A(1024, "aa%100caa", 'Z')
+    TEST_A(1024, "aa%*caa", 10, 'Z')
+    TEST_A(1024, "aa%-100caa", 'Z')
+    TEST_A(1024, "aa%-*caa", 10, 'Z')
+    TEST_A(1024, "aa%*caa", -10, 'Z')
+
+    // %s
+    TEST_A(1024, "%s", "xyz")
+    TEST_A(1024, "%s", "foooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+    TEST_A(1024, "%s", "fooooooooooooooooooooooooooooooooooooooooooooooooooooooo000000000000000000000000000000000000o")
+    TEST_A(1024, "%s", "fooooooooooooooooooooooooooooooooooooooooooooooooooooooo00000000000000000000000000000000000000000000000000000000000000000o")
+    TEST_A(1024, "%20s", "foo")
+    TEST_A(1024, "%20s", "")
+    TEST_A(1024, "%-20s", "")
+    TEST_A(1024, "%-20s", "foo")
+    TEST_A(1024, "%*s", 20, "foo")
+    TEST_A(1024, "%*s", -20, "foo")
+    TEST_A(1024, "%.0s", "aboba")
+    TEST_A(1024, "%10.0s", "aboba")
+    TEST_A(1024, "%-10.0s", "aboba")
+    TEST_A(1024, "%10.s", "aboba")
+    TEST_A(1024, "%-10.s", "aboba")
+    TEST_A(1024, "%.s", "aboba")
+    TEST_A(1024, "%.s", (char *)NULL)
+    TEST_A(1024, "%.0s", (char *)NULL)
+    TEST_A(1024, "%10.0s", (char *)NULL)
+    TEST_A(1024, "%-10.0s", (char *)NULL)
+    TEST_A(1024, "%10.s", (char *)NULL)
+    TEST_A(1024, "%-10.s", (char *)NULL)
+    TEST_A(1024, "%.*s", 0, (char *)NULL)
+    TEST_A(1024, "%.*s", 0, (char *)NULL)
+    TEST_A(1024, "%10.*s", 0, (char *)NULL)
+    TEST_A(1024, "%-10.*s", 0, (char *)NULL)
+    TEST_A(1024, "%*.*s", 10, 0, (char *)NULL)
+    TEST_A(1024, "%*.*s", 10, 0, (char *)NULL)
+        
+    TEST_B(1024, "aa%0100saa", "fooo")
+    TEST_B(1024, "aa%-0100saa", "fopo")
+    TEST_B(1024, "aa%0-100saa", "fopo")
+
+
+    printf("\n\n");
+    if (total_errors == 0 && total_warings == 0)
+    {
+        printf("\033[0;32mAll %d tests passed!\033[0m\n", total_tests);
+        return 0;
     }
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
-
-    double cpu_time_used = (end.tv_sec - start.tv_sec) + 
-                           (end.tv_nsec - start.tv_nsec) / 1e9;
-
-    for(int i = 0; i < ITERATIONS; i++) {
-        uint64_t t1 = __rdtscp(&ui);
-        func(buf, FMT_STRING, FMT_DATA);
-        uint64_t t2 = __rdtscp(&ui);
-        cycles[i] = t2 - t1;
+    else if (total_errors == 0)
+    {
+        printf("\033[0;33mFinished with warings: from %d tests, %d warings. [no errors]\033[0m\n", total_tests, total_warings);
     }
-
-    qsort(cycles, ITERATIONS, sizeof(uint64_t), compare_uint64);
-
-    printf("Example output:\n");
-    puts(buf);
-
-    printf("--- %s ---\n", name);
-    printf("Total CPU Time:  %.6f s\n", cpu_time_used);
-    printf("RDTSC Min:       %lu cycles\n", cycles[0]);
-    printf("RDTSC P50 (Med): %lu cycles\n", cycles[ITERATIONS / 2]);
-    printf("RDTSC P90 (Med): %lu cycles\n", cycles[(int)(ITERATIONS * 0.9)]);
-    printf("\n");
-
-    free(cycles);
-}
-
-#define STB_SPRINTF_IMPLEMENTATION 
-#include "stb_sprintf.h"
-
-int main() {
-    run_test("Standard sprintf", sprintf);
-    run_test("xsprintf", (int (*)(char*, const char*, ...))(void *)xsprintf);
-    run_test("stbsp_sprintf", (int (*)(char*, const char*, ...))(void *)stbsp_sprintf);
-    return 0;
+    else
+    {
+        printf("\033[0;31mERROR: from %d tests, %d failed, %d warings.\033[0m\n", total_tests, total_errors, total_warings);
+        return 1;
+    }
 }

@@ -1,10 +1,9 @@
 format ELF64
 
-include 'printf_core.inc'
 
-; configs
+include 'xprintf_config.asm'
 
-BUFFER_SIZE = 10*1024
+include 'printf_core.asm'
 
 ; --- data ---
 
@@ -12,13 +11,18 @@ REAL_BUFFER_SIZE = BUFFER_SIZE + 4*1024
 
 
 ; mask to use it in blend
-section '.rodata' align 32
+section '.rodata' align 64
 xprintf.blend_mask_table:
     times 32 db 0x00
     times 32 db 0xFF
 
 
-section '.text' executable
+section '.data' align 64
+
+    printf_core_data xprintf
+
+
+section '.text' executable writeable
 
 public xprintf
 
@@ -73,6 +77,7 @@ xprintf.end_printf:
     mov rax, rbp
     lea rsp, [rsp + REAL_BUFFER_SIZE + LOCAL_VARIABLES_SIZE]
     ; pop all registers
+    pop r13
     pop rbx
     pop r15
     pop r14
@@ -95,16 +100,28 @@ xprintf:
     push rdx
     push rsi
     ; store return address
-LOCAL_VARIABLES_SIZE = 0
-LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
+LOCAL_VARIABLES_SIZE = 8 * 8
+LOCAL_DATA_SIZE = 8 * (1 + 5) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
     push rax
     ; store used registers
     push rbp
     push r14
     push r15
     push rbx
+    push r13
     ; local variables
-    ; <empty>
+    sub rsp, LOCAL_VARIABLES_SIZE
+    test al, al
+    jz .skip_float_input
+    movsd [rsp], xmm0
+    movsd [rsp+8], xmm1
+    movsd [rsp+16], xmm2
+    movsd [rsp+24], xmm3
+    movsd [rsp+32], xmm4
+    movsd [rsp+40], xmm5
+    movsd [rsp+48], xmm6
+    movsd [rsp+56], xmm7
+.skip_float_input:
     
 
 ; rsi = destination [top of buffer]
@@ -113,29 +130,38 @@ LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
 ; rbx = current argument [pointer] ; first stack arg is at [rsp + BUFFER_SIZE + LOCAL_DATA_SIZE + 8*6]
 ; rbp = pointer on local variables
     mov r14, rdi
+    mov r13, rsp
     lea rbx, [rsp + LOCAL_DATA_SIZE]
     sub rsp, REAL_BUFFER_SIZE ; allocate data
     mov rsi, rsp
     lea r15, [rsp + BUFFER_SIZE]
     xor ebp, ebp
-    
-.main_loop:
 
 ; ----- find first "%" in source -------
-
     ; set registers to zero and to '%'
     vpxor ymm1, ymm1, ymm1
     mov eax, '%'
     vmovd xmm2, eax
     vpbroadcastb ymm2, xmm2
+    mov eax, ' '
+    vmovd xmm8, eax
+    vpbroadcastb ymm8, xmm8
+    mov eax, '0'
+    vmovd xmm9, eax
+    vpbroadcastb ymm9, xmm9
     
-.search_loop:
-
+.main_loop:
+    
     ; before searching check owerflow
     cmp rsi, r15
     jb @f
     flush_buffer
 @@:
+
+    if OPTIMIZE_SEQUENCE_FORMATS
+        cmp byte [r14], '%'
+        je .found_speedly
+    end if
 
 ; search unaligned part
     
@@ -154,9 +180,9 @@ LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     vpand ymm7, ymm6, ymm5 ; apply blend mask to result to remove false-positive behaviour
 
     ; update text at rsi
-    vmovdqu ymm8, [rsi + rcx]        ; ! usage of red zone :) [may be negative offset]
-    vpblendvb ymm8, ymm8, ymm0, ymm6 ; mix real data and new data
-    vmovdqu [rsi + rcx], ymm8        ; store result 
+    vmovdqu ymm10, [rsi + rcx]        ; ! usage of red zone :) [may be negative offset]
+    vpblendvb ymm10, ymm10, ymm0, ymm6 ; mix real data and new data
+    vmovdqu [rsi + rcx], ymm10        ; store result 
 
     ; use add becouse rcx = - offset
     ; move rsi forward [becouse in '.found' it will be moved backward]
@@ -207,28 +233,18 @@ LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     add r14, rax
     lea rsi, [rsi + rax - 32] ; step back & move only on rax bytes
 
-
     ; now, r14 points on zero or on '%'. check it
     cmp byte [r14], 0
     jz .end_printf
 
     ; use prinf core to update from command
-    printf_core xprintf
-
-    ; now, r14 100% points on '%'.
-    ; for now, support only %c
-
-    ; cmp byte [r14 + 1], 'c' it is always so
-    
-    cmp rsi, r15
-    jbe @f
-    flush_buffer
-@@:
-    ; take next argument and print it to buffer
-    mov al, [rbx]
-    mov [rsi], al
-    add rsi, 1
-    add r14, 2 ; skip %c
-    add rbx, 8
+    printf_core_code xprintf
 
     jmp .main_loop
+
+if OPTIMIZE_SEQUENCE_FORMATS
+.found_speedly:
+    mov eax, -1
+    add rsi, 32
+    jmp .found
+end if

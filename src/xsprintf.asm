@@ -1,22 +1,21 @@
 format ELF64
 
-include 'printf_core.inc'
+include 'xprintf_config.asm'
 
-OPTIMIZE_SEQUENCE_FORMATS = 1
+include 'printf_core.asm'
 
-; configs
+; data
+REAL_BUFFER_SIZE = 0
 
 ; lookup tables
-section '.rodata' align 32
+section '.rodata' align 64
 
-    align 32
+    align 64
 xsprintf.blend_mask_table:
     times 32 db 0x00
     times 32 db 0xFF
 
-
-
-    align 32
+    align 64
 xsprintf.shufA:
     ; X means 0x80 producing zero
     ; 0  => 0 1 2 ... 13 14 15 | 0 1 2 ... 14 15
@@ -46,7 +45,7 @@ xsprintf.shufA:
         end repeat
     end repeat
 
-    align 32
+    align 64
 xsprintf.shufB:
     ; X means 0x80 producing zero
     ; 0  => X X X ... X X X | X X X ... X X X
@@ -81,9 +80,14 @@ xsprintf.shufB:
             db 0x80
         end repeat
     end repeat
+
+
+section '.data' writable align 64
+
+    printf_core_data xsprintf
     
 
-section '.text' executable
+section '.text' executable writeable
 
 public xsprintf
 
@@ -123,6 +127,7 @@ xsprintf.end_printf:
     mov rax, rbp
     lea rsp, [rsp + LOCAL_VARIABLES_SIZE]
     ; pop all registers
+    pop r13
     pop rbx
     pop r14
     pop rbp
@@ -133,9 +138,15 @@ xsprintf.end_printf:
     mov [rsp], rdx
     ret
 
+xsprintf.fast_return:
+    mov byte [rdi], 0
+    ret
+
 ; -------------------------------------- begin of printf
 
 xsprintf:
+    cmp byte [rsi], 0
+    je .fast_return
     ; replace first ~6 args to make an array.
     mov rax, [rsp]
     mov [rsp], r9
@@ -143,15 +154,27 @@ xsprintf:
     push rcx
     push rdx
     ; store return address
-LOCAL_VARIABLES_SIZE = 0
-LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
+LOCAL_VARIABLES_SIZE = 8*8
+LOCAL_DATA_SIZE = 8 * (1 + 4) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
     push rax
     ; store used registers
     push rbp
     push r14
     push rbx
+    push r13
     ; local variables
-    ; <empty>
+    sub rsp, LOCAL_VARIABLES_SIZE
+    test al, al
+    jz .skip_float_input
+    movsd [rsp], xmm0
+    movsd [rsp+8], xmm1
+    movsd [rsp+16], xmm2
+    movsd [rsp+24], xmm3
+    movsd [rsp+32], xmm4
+    movsd [rsp+40], xmm5
+    movsd [rsp+48], xmm6
+    movsd [rsp+56], xmm7
+.skip_float_input:
     
 
 ; rsi = destination [top of buffer]
@@ -159,6 +182,7 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
 ; rbx = current argument [pointer] ; first stack arg is at [rsp + BUFFER_SIZE + LOCAL_DATA_SIZE + 8*6]
 ; rbp = pointer on local variables
     mov r14, rsi
+    mov r13, rsp
     mov rsi, rdi
     lea rbx, [rsp + LOCAL_DATA_SIZE]
     mov rbp, rsi
@@ -170,7 +194,12 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     mov eax, '%'
     vmovd xmm2, eax
     vpbroadcastb ymm2, xmm2
-
+    mov eax, ' '
+    vmovd xmm8, eax
+    vpbroadcastb ymm8, xmm8
+    mov eax, '0'
+    vmovd xmm9, eax
+    vpbroadcastb ymm9, xmm9
 
 .main_loop:
     if OPTIMIZE_SEQUENCE_FORMATS
@@ -191,21 +220,22 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     ; 4 * 8 = 32 = sizeof(ymm0)
     lea rdx, [rcx * 4]
     lea rax, [xsprintf.shufA]
-    vmovdqu ymm4, [rax + rdx * 8]
-    vmovdqu ymm5, [rax + rdx * 8 + (xsprintf.shufB - xsprintf.shufA)]
+    vmovdqa ymm4, [rax + rdx * 8]
+    vmovdqa ymm5, [rax + rdx * 8 + (xsprintf.shufB - xsprintf.shufA)]
 
     ; shuffle vectors
     vpshufb ymm0, ymm0, ymm4
     vpshufb ymm3, ymm3, ymm5
     ; join
     vpor ymm7, ymm0, ymm3
-    ; store
-    vmovdqu [rsi], ymm7
 
     ; test resulting vector on bad symbols
     vpcmpeqb ymm3, ymm7, ymm1
     vpcmpeqb ymm4, ymm7, ymm2   
     vpor ymm5, ymm3, ymm4 ; join
+    
+    ; store
+    vmovdqu [rsi], ymm7
 
     vptest ymm5, ymm5
     jnz .found_in_beginning
@@ -219,11 +249,11 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
 
     add r14, 32
     vmovdqa ymm0, [r14]
-    vmovdqu [rsi], ymm0   ; |- copy data to result buffer
-    add rsi, 32           ; |
     vpcmpeqb ymm3, ymm0, ymm1
     vpcmpeqb ymm4, ymm0, ymm2
+    vmovdqu [rsi], ymm0   ; |- copy data to result buffer
     vpor ymm5, ymm3, ymm4
+    add rsi, 32           ; |
     vptest ymm5, ymm5
     jz .search_small_loop
     
@@ -245,18 +275,7 @@ LOCAL_DATA_SIZE = 8 * (1 + 3) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     jz .end_printf
 
     ; use prinf core to update from command
-    printf_core xsprintf
-
-    ; now, r14 100% points on '%'.
-    ; for now, support only %c
-
-    ; cmp byte [r14 + 1], 'c' it is always so
-    ; take next argument and print it to buffer
-    mov al, [rbx]
-    mov [rsi], al
-    add rsi, 1
-    add r14, 2 ; skip %c
-    add rbx, 8
+    printf_core_code xsprintf
 
     jmp .main_loop
 
