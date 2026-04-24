@@ -518,7 +518,7 @@ end if
     test rdi, F_PRECISION
     cmovz r9d, eax ; set to base precision
     
-    add r14, 1 ; skip f command
+    add r14, 1 ; skip f/g/e command
 
     ; now, extract bytes from float:
     ; r13 = pointer on it in memory
@@ -553,90 +553,97 @@ end if
     ; rdx = exponent [int, biased : from 1 to 0x7FE]
 
     ; use tables to make integer from mantiss
-    lea rcx, [float_table_multiplers]
+    lea r10, [float_table_multiplers]
     ; use formula: answer = mantiss * multiple >> 64 * 10^power
-    mov r10, [rcx + 8 * rdx - 8] ; load multipler
-    lea rcx, [float_table_powers]
-    movsx rcx, word [rcx + 2 * rdx - 2]
+    mov rcx, [r10 + 8 * rdx - 8] ; load multipler
+    lea r10, [float_table_powers]
+    movsx r10, word [r10 + 2 * rdx - 2]
     
-    ; now, rcx = power
-    ; r10 = multipler
+    ; now, r10 = power
+    ; rcx = multipler
     xor edx, edx
-    mul r10 ; apply multipler
+    mul rcx ; apply multipler
     mov rax, rdx
 
     ; now,
     ; rax = base10 mantiss
-    ; rcx = power
+    ; r10 = power
+
+    ; TODO: test %g/%e and jump to that branch
+    cmp byte [r14], 'g'
+    je .float_g_spec
+    cmp byte [r14], 'e'
+    je .float_e_spec
+.float_g_spec_resulted_in_f:
 
     ; print it using slow loop for now
 
     push r13
     
-    mov r10, rsp
+    mov rcx, rsp
 
     sub rsp, 512 ; allocate buffer on stack
     mov r13, 10
 .float_slow_loop:
     xor rdx, rdx
     div r13
-    mov [r10], dl
-    sub r10, 1
-    add rcx, 1
-    cmp rcx, 0
+    mov [rcx], dl
+    sub rcx, 1
+    add r10, 1
+    cmp r10, 0
     jne .flt_skip_dot1
-    mov byte [r10], '.' xor '0'
-    sub r10, 1
+    mov byte [rcx], '.' xor '0'
+    sub rcx, 1
 .flt_skip_dot1:
     test rax, rax
     jnz .float_slow_loop
 
-    cmp byte [r10], '.' xor '0'
+    cmp byte [rcx], '.' xor '0'
     je .flt_skip_sub1
-    add r10, 1
+    add rcx, 1
 .flt_skip_sub1:
 
     ; while power is negative, write zeroes
-    cmp rcx, 0
+    cmp r10, 0
     jge .flt_skip_zpad
 .flt_skip_dot2:
-    mov byte [r10], '0' xor '0'
-    sub r10, 1
-    add rcx, 1
-    cmp rcx, 0
+    mov byte [rcx], '0' xor '0'
+    sub rcx, 1
+    add r10, 1
+    cmp r10, 0
     jl .flt_skip_dot2
-    mov byte [r10], '.' xor '0'
-    sub r10, 1
+    mov byte [rcx], '.' xor '0'
+    sub rcx, 1
 .flt_skip_zpad:
 
 
-    cmp byte [r10], '.'
+    cmp byte [rcx], '.'
     jne .flt_skip_sub12
-    mov byte [r10], '0' xor '0'
-    sub r10, 1
+    mov byte [rcx], '0' xor '0'
+    sub rcx, 1
 .flt_skip_sub12:
 
     ; copy it to rsi
     lea rdx, [rsp + 512]
 .float_copy_slow:
-    mov al, [r10]
+    mov al, [rcx]
     xor al, '0'
     mov [rsi], al
-    sub rcx, 1
+    sub r10, 1
     add rsi, 1
-    add r10, 1
-    cmp r10, rdx
+    add rcx, 1
+    cmp rcx, rdx
     jb .float_copy_slow
 
     mov rsp, rdx
 
-    ; pad with zeros while rcx is ok
+    ; pad with zeros while r10 is ok
 .flt_zeros_lop:
-    cmp rcx, 0
+    cmp r10, 0
     jle .flt_skip_zeros
     mov byte [rsi], '0'
     add rsi, 1
-    sub rcx, 1
+    sub r10, 1
     jmp .flt_zeros_lop
 .flt_skip_zeros:
     
@@ -722,10 +729,60 @@ end if
     mov rdx, [rbx]
     add rbx, 8
     jmp .float_loaded
+
+; ------------------------------- %e ----------------------------------
+.float_e_spec:
+    ; now, 
+    ; rax = base10 mantiss
+    ; r10 = power
+
+    mov rdx, rcx
+
+    ; here it is good, becouse length =
+    ; length = r9 + 1 + 1 + 1 + 1 + 3
+    ;       <prec>+'.'+'d'+'e'+'+'+<exp>
+
+    ; calculate width - length
+    lea rdx, [r8 - 7]
+    sub rdx, r9 ; also comparing it
+    jle .float_e_skip_forward_padding
+    lea rcx, [rsi + rdx]
+.float_e_skip_forward_padding:
+
+if COMPRESS_SMALL_PRECISION_E_FLOAT
+    cmp r9, 14 ; if precision isn't that much, we will compress digits of number
+    jae .float_e_compress_skipping
+    ; to compress number we will use simple formula:
+    ; power_to_compress = ~log10(rax) - r9 - 1
+    bsr rcx, rax
+    imul rcx, 1233
+    shr rcx, 12
+    sub rcx, r9
+    sub rcx, 1
+    cmp rcx, 0
+    jle .float_e_compress_skipping
+    push rax
+    ; now divide result by number on 10^rdx
+    lea rdx, [div_10_pow_multiplers]
+    mul qword [rdx + rcx * 8 - 8]
+    pop rax
+    sub rax, rdx
+    shr rax, 1
+    add rax, rdx
+    lea rdx, [div_10_pow_shifts]
+    mov rdx, [rdx + rcx * 8 - 8]
+    shr rax, rdx
+    add r10, rcx
+    ; now,
+    ; rax = base10 mantiss [cutted]
+    ; r10 = updated power
+.float_e_compress_skipping:
+end if
+
+    ; now, print all digits to buffer
+    mov rcx, 5165088340638674453 ; divisor
+.float_e_printloop:
     
-
-
-
 
 
 
@@ -792,6 +849,13 @@ float_mantiss_bit:
 ; float tables
 include 'float_tables.inc'
 
+powers_of_10:
+    p = 1
+    repeat 19
+        dq p
+        p = p * 10
+    end repeat
+
 align 64
 flag_jump_table:
     dq fn_name#.flag_space; ' '
@@ -828,9 +892,9 @@ final_jump_table:
     dq fn_name#.switch_default; 'B'
     dq fn_name#.switch_char; 'C'
     dq fn_name#.switch_default; 'D'
-    dq fn_name#.switch_default; 'E'
+    dq fn_name#.switch_float; 'E'
     dq fn_name#.switch_float; 'F'
-    dq fn_name#.switch_default; 'G'
+    dq fn_name#.switch_float; 'G'
     dq fn_name#.switch_default; 'H'
     dq fn_name#.switch_default; 'I'
     dq fn_name#.switch_default; 'J'
