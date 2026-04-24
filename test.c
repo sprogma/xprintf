@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "float.h"
 
 
 int total_errors = 0, total_warings = 0, total_tests = 0;
@@ -43,6 +44,19 @@ void test_error(int allow_to_fail, const char *format, const char *a, const char
 
 int main()
 {    
+    
+    xprintf("%f\n", 3.1415926/1000000000.0);
+    xprintf("%f\n", 3.1415926);
+    xprintf("%f\n", 1.100);
+    xprintf("%f\n", 1e-300);
+    xprintf("%f\n", 1e300);
+    xprintf("%f\n", DBL_MAX);
+    xprintf("%f\n", -DBL_MAX);
+    xprintf("%f\n", DBL_MIN);
+    xprintf("%f\n", DBL_TRUE_MIN * 2);
+    xprintf("%f\n", DBL_TRUE_MIN * 4);
+    xprintf("%f\n", DBL_TRUE_MIN * 8);
+    xprintf("%f\n", DBL_TRUE_MIN * 10);
     xprintf("Hello %% %corld%c, |%-10s|\n", 'W', '!', "What?");
 
     // %c
@@ -106,6 +120,15 @@ int main()
     TEST_B(1024, "aa%0100saa", "fooo")
     TEST_B(1024, "aa%-0100saa", "fopo")
     TEST_B(1024, "aa%0-100saa", "fopo")
+
+    // %f
+    TEST_A(1024, "%.300f", 0.0)
+    TEST_A(1024, "%300.100f", 0.0)
+    TEST_A(1024, "%.0f", 0.0)
+    TEST_A(1024, "%#.0f", 0.0)
+    
+    TEST_B(1024, "%f", 1.0)
+    TEST_B(1024, "%.0f", 1.0)
 
 
     printf("\n\n");

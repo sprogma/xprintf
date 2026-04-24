@@ -93,7 +93,7 @@ xprintf.end_printf:
 
 xprintf:
     ; replace first ~6 args to make an array.
-    mov rax, [rsp]
+    mov r10, [rsp]
     mov [rsp], r9
     push r8
     push rcx
@@ -102,7 +102,7 @@ xprintf:
     ; store return address
 LOCAL_VARIABLES_SIZE = 8 * 8
 LOCAL_DATA_SIZE = 8 * (1 + 5) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
-    push rax
+    push r10
     ; store used registers
     push rbp
     push r14
@@ -127,6 +127,7 @@ LOCAL_DATA_SIZE = 8 * (1 + 5) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
 ; rsi = destination [top of buffer]
 ; r15 = max top of buffer [to compare with]
 ; r14 = source [position in string]
+; r13 = pointer on floats
 ; rbx = current argument [pointer] ; first stack arg is at [rsp + BUFFER_SIZE + LOCAL_DATA_SIZE + 8*6]
 ; rbp = pointer on local variables
     mov r14, rdi

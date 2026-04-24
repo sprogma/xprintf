@@ -1,3 +1,4 @@
+
 macro printf_core_code fn_name {
 
     ; here r14 points on '%'
@@ -47,7 +48,7 @@ F_NEGATIVE = 0x20
 F_SIGN = 0x40
 F_SPACE = 0x80
 F_PRECISION = 0x200
-F_PREFIX = 0x400 ; '#'
+F_ALTERNATE = 0x400 ; '#'
 F_ZERO = 0x800
 F_SPLITTER = 0x1000
 
@@ -107,7 +108,7 @@ F_SPLITTER = 0x1000
     jmp .flag_parse_loop
 
 .flag_prefix:
-    or rdi, F_PREFIX
+    or rdi, F_ALTERNATE
     jmp .flag_parse_loop
 
 .flag_plus:
@@ -166,6 +167,7 @@ end if
 
 
 
+    ; ------------------------------------------------------ chars ---------------------------------------------------------------
 .switch_char:
     if STRICT_GNU = 1
         vmovdqa ymm15, ymm8 ; can't fill with zeros
@@ -189,6 +191,7 @@ end if
     jmp .main_loop
 
 
+    ; ----------------------------------------------------- strings --------------------------------------------------------------
 .switch_string:
     if STRICT_GNU = 1
         vmovdqa ymm15, ymm8 ; can't fill with zeros
@@ -507,7 +510,225 @@ end if
     lea rcx, [rsi + rax] ; get width of spaces
     call .padding_proc ; set them
     jmp .main_loop ; return
+
+
+    ; ----------------------------------------------------- floats --------------------------------------------------------------
+.switch_float:
+    mov eax, 6
+    test rdi, F_PRECISION
+    cmovz r9d, eax ; set to base precision
     
+    add r14, 1 ; skip f command
+
+    ; now, extract bytes from float:
+    ; r13 = pointer on it in memory
+    lea rax, [rsp + REAL_BUFFER_SIZE + LOCAL_VARIABLES_SIZE] ; get end of floats segment
+    cmp r13, rax
+    jge .float_load_from_rbx ; if all floats from xmm0-7 are read
+    mov rdx, [r13] ; load double
+    add r13, 8
+.float_loaded:
+    ; now, rdx = double
+    mov rax, rdx
+    shr rdx, 52
+    and edx, 0x7FF ; exponent
+    and rax, [float_mantiss_base]
+
+    if STRICT_GNU
+        test rdx, rdx
+        jz .float_zero_exponent
+    else
+        test rdx, rdx
+        jz .float_zero_print
+    end if
+
+    or rax, [float_mantiss_bit] ; add 53 bit
+    
+    if STRICT_GNU
+.float_zero_exponent_denormalized:
+    end if
+
+    ; now:
+    ; rax = mantiss [int]
+    ; rdx = exponent [int, biased : from 1 to 0x7FE]
+
+    ; use tables to make integer from mantiss
+    lea rcx, [float_table_multiplers]
+    ; use formula: answer = mantiss * multiple >> 64 * 10^power
+    mov r10, [rcx + 8 * rdx - 8] ; load multipler
+    lea rcx, [float_table_powers]
+    movsx rcx, word [rcx + 2 * rdx - 2]
+    
+    ; now, rcx = power
+    ; r10 = multipler
+    xor edx, edx
+    mul r10 ; apply multipler
+    mov rax, rdx
+
+    ; now,
+    ; rax = base10 mantiss
+    ; rcx = power
+
+    ; print it using slow loop for now
+
+    push r13
+    
+    mov r10, rsp
+
+    sub rsp, 512 ; allocate buffer on stack
+    mov r13, 10
+.float_slow_loop:
+    xor rdx, rdx
+    div r13
+    mov [r10], dl
+    sub r10, 1
+    add rcx, 1
+    cmp rcx, 0
+    jne .flt_skip_dot1
+    mov byte [r10], '.' xor '0'
+    sub r10, 1
+.flt_skip_dot1:
+    test rax, rax
+    jnz .float_slow_loop
+
+    cmp byte [r10], '.' xor '0'
+    je .flt_skip_sub1
+    add r10, 1
+.flt_skip_sub1:
+
+    ; while power is negative, write zeroes
+    cmp rcx, 0
+    jge .flt_skip_zpad
+.flt_skip_dot2:
+    mov byte [r10], '0' xor '0'
+    sub r10, 1
+    add rcx, 1
+    cmp rcx, 0
+    jl .flt_skip_dot2
+    mov byte [r10], '.' xor '0'
+    sub r10, 1
+.flt_skip_zpad:
+
+
+    cmp byte [r10], '.'
+    jne .flt_skip_sub12
+    mov byte [r10], '0' xor '0'
+    sub r10, 1
+.flt_skip_sub12:
+
+    ; copy it to rsi
+    lea rdx, [rsp + 512]
+.float_copy_slow:
+    mov al, [r10]
+    xor al, '0'
+    mov [rsi], al
+    sub rcx, 1
+    add rsi, 1
+    add r10, 1
+    cmp r10, rdx
+    jb .float_copy_slow
+
+    mov rsp, rdx
+
+    ; pad with zeros while rcx is ok
+.flt_zeros_lop:
+    cmp rcx, 0
+    jle .flt_skip_zeros
+    mov byte [rsi], '0'
+    add rsi, 1
+    sub rcx, 1
+    jmp .flt_zeros_lop
+.flt_skip_zeros:
+    
+    pop r13
+
+    jmp .main_loop
+
+
+.float_zero_print:
+    ; now, r9 = precision r8 = width
+    ; print 0.{N} + paddings
+
+    test r9, r9
+    jz .float_zero_print_zero_precision
+
+    lea rcx, [rsi + r8 - 2] ; minus size of  "0." + "0"*r9
+    sub rcx, r9
+    cmp rsi, rcx
+    jae @f
+    call .padding_proc
+@@:
+
+    mov word [rsi], '.' * 256 + '0'
+    add rsi, 2
+
+    ; pad with zeros needed count
+    lea rcx, [rsi + r9]
+    vmovdqa ymm0, ymm15
+    vmovdqa ymm15, ymm9
+    call .padding_proc
+    vmovdqa ymm15, ymm0
+
+    ; pad with what there was to end if it was negative sizing
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.float_zero_print_zero_precision:
+    test rdi, F_ALTERNATE
+    jnz .float_zero_print_zero_precision_alternate
+
+    cmp r8, 0
+    jle @f
+    lea rcx, [rsi + r8 - 1]
+    call .padding_proc
+@@:
+
+    mov byte [rsi], '0'
+    add rsi, 1
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.float_zero_print_zero_precision_alternate:
+
+    cmp r8, 1
+    jle @f
+    lea rcx, [rsi + r8 - 2]
+    call .padding_proc
+@@:
+
+    mov word [rsi], '.' * 256 + '0'
+    add rsi, 2
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+    
+    if STRICT_GNU
+.float_zero_exponent:
+    test rax, rax
+    jz .float_zero_print
+    ; denormalized number, set exponent to -1022 = 1
+    mov rdx, 1
+    jmp .float_zero_exponent_denormalized
+    end if
+
+.float_load_from_rbx:
+    mov rdx, [rbx]
+    add rbx, 8
+    jmp .float_loaded
+    
+
+
+
+
+
+
+
+        
 
 .insert_percent:
     mov [rsi], byte '%'
@@ -532,9 +753,9 @@ end if
 .padding_proc:
     ; moves rsi to rcx.
     vmovdqu [rsi], ymm15
+    add rsi, 32
     cmp rsi, rcx
     jge .padding_done
-    add rsi, 32
     and rsi, -32 ; align it
     lea rdx, [rsi + 128]
     cmp rdx, rcx
@@ -559,6 +780,15 @@ end if
 }
 
 macro printf_core_data fn_name {
+
+float_mantiss_base:
+    dq 0x000FFFFFFFFFFFFF
+
+float_mantiss_bit:
+    dq 0x0010000000000000
+
+; float tables
+include 'float_tables.inc'
 
 align 64
 flag_jump_table:
@@ -597,7 +827,7 @@ final_jump_table:
     dq fn_name#.switch_char; 'C'
     dq fn_name#.switch_default; 'D'
     dq fn_name#.switch_default; 'E'
-    dq fn_name#.switch_default; 'F'
+    dq fn_name#.switch_float; 'F'
     dq fn_name#.switch_default; 'G'
     dq fn_name#.switch_default; 'H'
     dq fn_name#.switch_default; 'I'
