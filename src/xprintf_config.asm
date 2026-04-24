@@ -6,7 +6,7 @@ OPTIMIZE_SEQUENCE_FORMATS = 1
 UNROLL_STRING_SEARCH_SMALL_LOOP = 0 
 
 ; make code ?slower? but more cstdlib compactable
-STRICT_GNU = 1
+STRICT_GNU = 0
 
 ; xprintf only
 BUFFER_SIZE = 10*1024

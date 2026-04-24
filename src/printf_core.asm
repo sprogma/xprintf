@@ -642,6 +642,8 @@ end if
     
     pop r13
 
+    cmp r8, 0
+    jl .check_end_padding
     jmp .main_loop
 
 
