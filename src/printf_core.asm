@@ -561,7 +561,6 @@ end if
     
     ; now, r10 = power
     ; rcx = multipler
-    xor edx, edx
     mul rcx ; apply multipler
     mov rax, rdx
 
@@ -780,20 +779,39 @@ if COMPRESS_SMALL_PRECISION_E_FLOAT
 end if
 
     ; now, print all digits to buffer
-    mov rcx, 5165088340638674453 ; divisor
+    mov rcx, 0x28f5c28f5c28f5c3 ; divisor [gained from clang]
 .float_e_printloop:
-    
+    mov r12, rax
+    shr rax, 0x2
+    mul rcx
+    mov rax, rdx
+    shr rax, 0x2
+    imul rdx, rax, 0x64
+    sub rdx, r12
+    ; now, rdx = remainder, rax = result
+    lea rcx, [integer_numbers]
+    movzx ecx, [integer_numbers + rdx]
+    sub rsp, 2
+    mov [rsp], cx
+    add r10, 2
+    test rax, rax
+    jnz .float_e_printloop
+    ; check if we printed '0'
+    cmp byte [rsp], '0'+1
+    adc rsp
 
 
 
 
-        
+; --------------------------------------------------------- percent -----------------------------------------------------------
 
 .insert_percent:
     mov [rsi], byte '%'
     add rsi, 1 ; update destination buffer
     add r14, 2 ; skip '%'
     jmp .main_loop
+
+; --------------------------------------------------------- helpers -----------------------------------------------------------
 
 .check_end_padding:
     ; r11 = rsi at beginning

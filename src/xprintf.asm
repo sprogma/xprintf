@@ -77,6 +77,7 @@ xprintf.end_printf:
     mov rax, rbp
     lea rsp, [rsp + REAL_BUFFER_SIZE + LOCAL_VARIABLES_SIZE]
     ; pop all registers
+    pop r12
     pop r13
     pop rbx
     pop r15
@@ -101,7 +102,7 @@ xprintf:
     push rsi
     ; store return address
 LOCAL_VARIABLES_SIZE = 8 * 8
-LOCAL_DATA_SIZE = 8 * (1 + 5) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved registers
+LOCAL_DATA_SIZE = 8 * (1 + 6) + LOCAL_VARIABLES_SIZE ; 1 return address, 6 saved registers
     push r10
     ; store used registers
     push rbp
@@ -109,6 +110,7 @@ LOCAL_DATA_SIZE = 8 * (1 + 5) + LOCAL_VARIABLES_SIZE ; 1 return address, 4 saved
     push r15
     push rbx
     push r13
+    push r12
     ; local variables
     sub rsp, LOCAL_VARIABLES_SIZE
     test al, al

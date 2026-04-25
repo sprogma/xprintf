@@ -105,9 +105,8 @@ Write-Host "Data Gathered" -Fore green
 
 @"
 
-
 integer_numbers:
-    db "$((0..99|%{$_.PadLeft(2)-replace" ",0})-join"")"
+    db "$((0..99|%{([string]$_).PadLeft(2)-replace" ",0})-join"")"
 
 float_table_multiplers:
 $(($data | % {" "*4 + "dq $($_.multipler)"})-join"`n")
