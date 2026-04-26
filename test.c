@@ -44,19 +44,27 @@ void test_error(int allow_to_fail, const char *format, const char *a, const char
 
 int main()
 {    
+    xprintf("<%lld>\n", 18446744073709551615ull);
+    xprintf("<%lld>\n", 998244353ll);
     
-    xprintf("%f\n", 3.1415926/1000000000.0);
-    xprintf("%f\n", 3.1415926);
-    xprintf("%f\n", 1.100);
-    xprintf("%f\n", 1e-300);
-    xprintf("%f\n", 1e300);
-    xprintf("%f\n", DBL_MAX);
-    xprintf("%f\n", -DBL_MAX);
-    xprintf("%f\n", DBL_MIN);
-    xprintf("%f\n", DBL_TRUE_MIN * 2);
-    xprintf("%f\n", DBL_TRUE_MIN * 4);
-    xprintf("%f\n", DBL_TRUE_MIN * 8);
-    xprintf("%f\n", DBL_TRUE_MIN * 10);
+    // xprintf("%.5000e\n", 123.456);
+    // xprintf("%e\n", 1.100);
+    // xprintf("%50e\n", 3.1415926/1000000000.0);
+    // xprintf("%50e\n", 3.1415926);
+    // xprintf("%50e\n", -1e-300);
+    // xprintf("%50e\n", -1e-179);
+    // xprintf("%.20e\n", -1e-179);
+    // xprintf("%+50.e\n", 1e-179);
+    // xprintf("%#+50.e\n", 1e-179);
+    // xprintf("%-50.20eZOV\n", -1e-179);
+    // xprintf("%e\n", 1e300);
+    // xprintf("%e\n", DBL_MAX);
+    // xprintf("%e\n", -DBL_MAX);
+    // xprintf("%e\n", DBL_TRUE_MIN * 2);
+    // xprintf("%e\n", DBL_TRUE_MIN * 4);
+    // xprintf("%e\n", DBL_TRUE_MIN * 8);
+    // xprintf("%e\n", DBL_TRUE_MIN * 10);
+    
     xprintf("Hello %% %corld%c, |%-10s|\n", 'W', '!', "What?");
 
     // %c
@@ -139,6 +147,16 @@ int main()
     // TODO: this tests will be A in future
     TEST_B(1024, "%f", 1.0)
     TEST_B(1024, "%.0f", 1.0)
+
+
+    // %e
+    TEST_A(1024, "%e", 1e300)
+    TEST_A(1024, "%.4e", -1e300)
+    TEST_A(1024, "%.e", -1e300)
+    TEST_A(1024, "%#.e", -1e300)
+    TEST_A(1024, "%+#.e", 1e300)
+    TEST_A(1024, "%#-100.e", 1e300)
+    
 
 
     printf("\n\n");

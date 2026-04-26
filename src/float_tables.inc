@@ -4119,22 +4119,22 @@ div_10_pow_multiplers:
     dq 2820903858849102351
 
 div_10_pow_shifts:
-    dq 4
-    dq 7
-    dq 10
-    dq 14
-    dq 17
-    dq 20
-    dq 24
-    dq 27
-    dq 30
-    dq 34
-    dq 37
-    dq 40
-    dq 44
-    dq 47
-    dq 50
-    dq 54
-    dq 57
-    dq 60
+    db 3
+    db 6
+    db 9
+    db 13
+    db 16
+    db 19
+    db 23
+    db 26
+    db 29
+    db 33
+    db 36
+    db 39
+    db 43
+    db 46
+    db 49
+    db 53
+    db 56
+    db 59
 

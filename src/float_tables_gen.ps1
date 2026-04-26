@@ -80,6 +80,7 @@ $data, $divisors = 1..2 | % -parallel {
             Write-Progress -Id 1 -Activity "Generating float -> int tables" -Completed
         }
         2 {
+            # function g([bigint]$x,[bigint]$m, [bigint]$s){$r=($x*$m)-shr64n;$t=(($x-$r)-shr1n) + $r;$t-shr($s)}
             # create division on 10 table
             1..18 | % {
                 $d = [bigint]::pow(10n, $_)
@@ -90,7 +91,7 @@ $data, $divisors = 1..2 | % -parallel {
                     $mLow = $m - (1n-shl$n)
                     if (0n -le $mLow -and $mLow -lt (1n-shl$n))
                     {
-                        [pscustomobject]@{multipler=$mLow; shift=$_}
+                        [pscustomobject]@{multipler=$mLow; shift=$_-1n}
                     }
                 } | select -First 1
                 Write-Progress -Id 2 -Activity "Generating division on 10 tables" -Status "..." -PercentComplete ([int](100*$_/18))
@@ -118,7 +119,7 @@ div_10_pow_multiplers:
 $(($divisors | % {" "*4 + "dq $($_.multipler)"})-join"`n")
 
 div_10_pow_shifts:
-$(($divisors | % {" "*4 + "dq $($_.shift)"})-join"`n")
+$(($divisors | % {" "*4 + "db $($_.shift)"})-join"`n")
 
 "@ >"$PSScriptRoot/float_tables.inc"
 

@@ -151,8 +151,18 @@ end if
         test rdi, F_NEGATIVE
         cmovnz r8, rdx
     end if
-    ; eax is already loaded, but it is char-' '
+
+    ; now
     movzx eax, byte [r14]
+    
+.update_flag_long_loop:
+    cmp al, 'l'
+    je .update_flag_long
+.update_flag_short_loop:
+    cmp al, 'h'
+    je .update_flag_short
+    
+    ; eax is already loaded
     and eax, -33 ; normalize
     sub eax, 64 ; '@' = 0
 
@@ -160,11 +170,21 @@ end if
     lea rcx, [final_jump_table]
     jmp qword [rcx + rax * 8]
 
+.update_flag_long:
+    or rdi, F_LONG
+    add r14, 1
+    movzx eax, byte [r14]
+    jmp .update_flag_long_loop
+
+.update_flag_short:
+    or rdi, F_SHORT
+    add r14, 1
+    movzx eax, byte [r14]
+    jmp .update_flag_short_loop
+
     ; cases
-.switch_default: ; %c for now
-
-
-
+.switch_default:
+    jmp .main_loop
 
 
     ; ------------------------------------------------------ chars ---------------------------------------------------------------
@@ -528,13 +548,16 @@ end if
     mov rdx, [r13] ; load double
     add r13, 8
 .float_loaded:
+
+    mov r12, rdx
+
     ; now, rdx = double
     mov rax, rdx
     shr rdx, 52
     and edx, 0x7FF ; exponent
     and rax, [float_mantiss_base]
 
-    if STRICT_GNU
+    if STRICT_GNU & 0
         test rdx, rdx
         jz .float_zero_exponent
     else
@@ -568,58 +591,66 @@ end if
     ; rax = base10 mantiss
     ; r10 = power
 
-    ; TODO: test %g/%e and jump to that branch
-    cmp byte [r14], 'g'
+    cmp byte [r14 - 1], 'g'
     je .float_g_spec
-    cmp byte [r14], 'e'
+    cmp byte [r14 - 1], 'e'
     je .float_e_spec
 .float_g_spec_resulted_in_f:
+
+
+    ; width: it is unknown?
+
 
     ; print it using slow loop for now
 
     push r13
+
     
     mov rcx, rsp
 
     sub rsp, 512 ; allocate buffer on stack
+ 
+
     mov r13, 10
 .float_slow_loop:
     xor rdx, rdx
     div r13
-    mov [rcx], dl
     sub rcx, 1
+    mov [rcx], dl
     add r10, 1
     cmp r10, 0
     jne .flt_skip_dot1
-    mov byte [rcx], '.' xor '0'
     sub rcx, 1
+    mov byte [rcx], '.' xor '0'
 .flt_skip_dot1:
     test rax, rax
     jnz .float_slow_loop
 
+
     cmp byte [rcx], '.' xor '0'
-    je .flt_skip_sub1
-    add rcx, 1
+    jne .flt_skip_sub1
+    sub rcx, 1
+    mov byte [rcx], '0' xor '0'
 .flt_skip_sub1:
 
     ; while power is negative, write zeroes
     cmp r10, 0
     jge .flt_skip_zpad
 .flt_skip_dot2:
-    mov byte [rcx], '0' xor '0'
     sub rcx, 1
+    mov byte [rcx], '0' xor '0'
     add r10, 1
     cmp r10, 0
     jl .flt_skip_dot2
-    mov byte [rcx], '.' xor '0'
     sub rcx, 1
+    mov byte [rcx], '.' xor '0'
 .flt_skip_zpad:
 
 
-    cmp byte [rcx], '.'
+    cmp byte [rcx], '.' xor '0'
     jne .flt_skip_sub12
-    mov byte [rcx], '0' xor '0'
     sub rcx, 1
+    mov byte [rcx], '0' xor '0'
 .flt_skip_sub12:
 
     ; copy it to rsi
@@ -656,6 +687,9 @@ end if
 .float_zero_print:
     ; now, r9 = precision r8 = width
     ; print 0.{N} + paddings
+
+    cmp byte [r14 - 1], 'e'
+    je .float_zero_print_e
 
     test r9, r9
     jz .float_zero_print_zero_precision
@@ -707,12 +741,80 @@ end if
     call .padding_proc
 @@:
 
-    mov word [rsi], '.' * 256 + '0'
+    mov word [rsi], '0.'
     add rsi, 2
     
     cmp r8, 0
     jl .check_end_padding
     jmp .main_loop
+
+
+
+.float_zero_print_e:
+    test r9, r9
+    jz .float_zero_print_e_zero_precision
+
+    lea rcx, [rsi + r8 - 2 - 5] ; minus size of  "0." + "0"*r9 + "e+000"
+    sub rcx, r9
+    cmp rsi, rcx
+    jae @f
+    call .padding_proc
+@@:
+
+    mov word [rsi], '0.'
+    add rsi, 2
+
+    ; pad with zeros needed count
+    lea rcx, [rsi + r9]
+    vmovdqa ymm0, ymm15
+    vmovdqa ymm15, ymm9
+    call .padding_proc
+    vmovdqa ymm15, ymm0
+
+    ; add 'e+000'
+    mov dword [rsi], 'e+00'
+    mov byte [rsi + 4], '0'
+    add rsi, 5
+
+    ; pad with what there was to end if it was negative sizing
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.float_zero_print_e_zero_precision:
+    test rdi, F_ALTERNATE
+    jnz .float_zero_print_e_zero_precision_alternate
+
+    cmp r8, 0
+    jle @f
+    lea rcx, [rsi + r8 - 1 - 5]
+    call .padding_proc
+@@:
+
+    mov dword [rsi], '0e+0'
+    mov word [rsi + 4], '00'
+    add rsi, 6
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.float_zero_print_e_zero_precision_alternate:
+
+    cmp r8, 1
+    jle @f
+    lea rcx, [rsi + r8 - 2]
+    call .padding_proc
+@@:
+
+    mov dword [rsi], '0.e+'
+    mov dword [rsi + 4], '000'
+    add rsi, 7
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
 
     
     if STRICT_GNU
@@ -735,24 +837,53 @@ end if
     ; rax = base10 mantiss
     ; r10 = power
 
-    mov rdx, rcx
-
     ; here it is good, becouse length =
     ; length = r9 + 1 + 1 + 1 + 1 + 3
     ;       <prec>+'.'+'d'+'e'+'+'+<exp>
 
-    ; calculate width - length
+    ; calculate width - length in rdx
     lea rdx, [r8 - 7]
-    sub rdx, r9 ; also comparing it
+    lea rcx, [r8 - 8] ; if there is sign, decrease width
+    cmp r12, 0
+    cmovl rdx, rcx ; - 1 if there is sign
+    test rdi, F_SIGN
+    cmovnz rdx, rcx ; - 1 if there is sign
+
+    ; if r9 == 0 and it isn't F_ALTERNATE, decrease one more
+    mov  rcx, rdi
+    and  ecx, F_ALTERNATE
+    or   rcx, r9
+    sub  rcx, 1
+    adc  rdx, 0
+
+    ; sub precision
+    sub rdx, r9 
+
+    ; rdx = padding width
+    
+    ; also comparing it
     jle .float_e_skip_forward_padding
     lea rcx, [rsi + rdx]
+    call .padding_proc
 .float_e_skip_forward_padding:
 
+
+    ; print sign
+    test rdi, F_SIGN
+    jnz .float_e_sign_flag_presented
+    mov byte [rsi], '-'
+    shr r12, 63
+    add rsi, r12 ; add 1 if r12 < 0
+.float_e_sign_flag_presented_continue:
+
+
+
 if COMPRESS_SMALL_PRECISION_E_FLOAT
-    cmp r9, 14 ; if precision isn't that much, we will compress digits of number
+    cmp r9, 12 ; if precision isn't that much, we will compress digits of number
     jae .float_e_compress_skipping
     ; to compress number we will use simple formula:
     ; power_to_compress = ~log10(rax) - r9 - 1
+    
     bsr rcx, rax
     imul rcx, 1233
     shr rcx, 12
@@ -760,17 +891,20 @@ if COMPRESS_SMALL_PRECISION_E_FLOAT
     sub rcx, 1
     cmp rcx, 0
     jle .float_e_compress_skipping
-    push rax
+
+    ; function g([bigint]$x,[bigint]$m, [bigint]$s){$r=($x*$m)-shr64n;$t=(($x-$r)-shr1n) + $r;$t-shr($s-1n)}
+
+    mov r12, rax
     ; now divide result by number on 10^rdx
     lea rdx, [div_10_pow_multiplers]
     mul qword [rdx + rcx * 8 - 8]
-    pop rax
+    mov rax, r12
     sub rax, rdx
     shr rax, 1
     add rax, rdx
     lea rdx, [div_10_pow_shifts]
-    mov rdx, [rdx + rcx * 8 - 8]
-    shr rax, rdx
+    movzx edx, byte [rdx + rcx - 1]
+    shrx rax, rax, rdx
     add r10, rcx
     ; now,
     ; rax = base10 mantiss [cutted]
@@ -779,8 +913,16 @@ if COMPRESS_SMALL_PRECISION_E_FLOAT
 end if
 
     ; now, print all digits to buffer
+    push r13 ; allocate one more register
     mov rcx, 0x28f5c28f5c28f5c3 ; divisor [gained from clang]
+    lea r13, [rsi + 32] ; number will 100% fit in 32 digits
 .float_e_printloop:
+    ; rax = base10 value
+    ; r10 = power
+    ; rcx = divisor
+    ; r13 = destination
+
+    ; /= 100
     mov r12, rax
     shr rax, 0x2
     mul rcx
@@ -788,19 +930,275 @@ end if
     shr rax, 0x2
     imul rdx, rax, 0x64
     sub rdx, r12
+    neg rdx
     ; now, rdx = remainder, rax = result
-    lea rcx, [integer_numbers]
-    movzx ecx, [integer_numbers + rdx]
-    sub rsp, 2
-    mov [rsp], cx
-    add r10, 2
+
+    lea r12, [integer_numbers]
+    movzx r12, word [r12 + 2 * rdx]
+    
+    sub r13, 2
+    mov [r13], r12w
+    
     test rax, rax
     jnz .float_e_printloop
-    ; check if we printed '0'
-    cmp byte [rsp], '0'+1
-    adc rsp
+    
+    ; check if we printed leading '0'
+    cmp byte [r13], '0'+1
+    adc r13, 0
 
 
+    ; printed power += actually printed count after '.'
+    ; => r10 += rsi + 32 - r13 - 1
+    lea rax, [rsi + 31]
+    sub rax, r13
+    lea r10, [r10 + rax]
+    
+
+    test rdi, F_ALTERNATE
+    jnz .float_e_skip_zero_precision_check
+    test r9, r9
+    jz .float_e_non_zero_value_zero_precision
+.float_e_skip_zero_precision_check:
+
+    ; copy to rsi
+    vmovdqu ymm0, [r13]
+    vmovdqu [rsi + 1], ymm0
+    movzx eax, byte [rsi + 1] ; copy digit
+    mov byte [rsi], al
+    mov byte [rsi + 1], '.'
+    
+    ; check if need to pad with zeros
+    ; count of current printed = rsi + 32 - r13 - 2   (2 = digit + '.')
+    ; => need to pad = r9 - rsi - 30 + r13
+    ; => from new rsi = rsi + r9 + 2 - rax
+    lea rax, [r9 + r13 - 30]
+    sub rax, rsi
+    ; cmp rax, 0 is already ready
+    jle .float_e_skip_zero_precision_padding
+    vmovdqa ymm0, ymm15
+    vmovdqa ymm15, ymm9
+    mov r12, rsi
+    lea rsi, [rsi + r9 + 2]
+    push rcx
+    mov rcx, rsi
+    sub rsi, rax
+    call .padding_proc
+    pop rcx
+    vmovdqa ymm15, ymm0
+    mov rsi, r12 ; restore rsi to update futher
+.float_e_skip_zero_precision_padding:
+
+    ; printed count = 2 + r9
+    lea rsi, [rsi + r9 + 2]
+    
+    ; add it to number
+    mov eax, 'e' + '+'*256
+    mov edx, 'e' + '-'*256
+    mov r13, r10
+    neg r13
+    cmp r10, 0
+    cmovl eax, edx
+    cmovl r10, r13
+    mov [rsi], ax
+    
+    ; now, need to print r10 as 3 digit number
+    mov rax, r10
+    shr rax, 2
+    mul rcx
+    mov rax, rdx
+    shr rax, 2
+    imul rdx, rax, 0x64
+    sub rdx, r10
+    neg rdx
+    ; now rdx = 2 digit number, and rax = left number
+    add rax, '0'
+    mov [rsi + 2], rax
+    lea r12, [integer_numbers]
+    movzx ecx, word [r12 + 2 * rdx]
+    mov [rsi + 3], cx
+    add rsi, 5
+
+    ; restore register
+    pop r13
+
+    ; return
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+.float_e_sign_flag_presented:
+    mov ecx, '+'
+    mov edx, '-'
+    cmp r12, 0
+    cmovl ecx, edx
+    mov [rsi], cl
+    add rsi, 1
+    jmp .float_e_sign_flag_presented_continue
+
+.float_e_non_zero_value_zero_precision:
+
+    ; copy one digit
+    movzx eax, byte [r13] ; copy digit
+    mov [rsi], al
+    
+    ; add it to number
+    mov eax, 'e' + '+'*256
+    mov edx, 'e' + '-'*256
+    mov r13, r10
+    neg r13
+    cmp r10, 0
+    cmovl eax, edx
+    cmovl r10, r13
+    mov [rsi + 1], ax
+    
+    ; now, need to print r10 as 3 digit number
+    mov rax, r10
+    shr rax, 2
+    mul rcx
+    mov rax, rdx
+    shr rax, 2
+    imul rdx, rax, 0x64
+    sub rdx, r10
+    neg rdx
+    ; now rdx = 2 digit number, and rax = left number
+    add rax, '0'
+    mov [rsi + 3], rax
+    lea r12, [integer_numbers]
+    movzx ecx, word [r12 + 2 * rdx]
+    mov [rsi + 4], cx
+    
+    add rsi, 6 ; total 6 numbers
+
+    ; restore register
+    pop r13
+
+    ; return
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+; ------------------------------- %g ------------------------------
+
+.float_g_spec:
+
+    mov dword [rsi], 'no%g'
+    add rsi, 4
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+
+; ---------------------------------------------------------- inegers ---------------------------------------------------------
+
+.switch_integer:
+    mov rax, [rbx]
+    test rdi, F_LONG
+    jnz .integer_int64_from_32
+    mov eax, eax
+.integer_int64_from_32:
+
+    add r14, 1 ; skip 'd'/'i'
+    add rbx, 8 ; move registers array forward
+
+    ; simply allocate buffer and use same technology as in %e
+    ; N <=20 digits
+    ; N = 3x8 digits = 3 x 32bit
+    ; N = 6 x 4 digits = 6 x 16bit
+    ; N = 12 x 2 digit = 12 x 8 bit?
+    ; to bct + store ...
+
+    ; break by 8 (2 divisions)
+    
+    mov rcx, rsp
+    and rcx, -32 ; get aligned buffer
+    
+    mov rdx, -6067343680855748867
+    mov r12, rax
+    mul rdx
+    mov r10, rdx ; load hi part
+    shr r10, 26 ; r10 = n/1e8
+    imul rax, r10, 100000000 ; rax = round(n,1e8)
+    mov rdx, r12
+    sub rdx, rax ; rdx = remainder
+    mov [rcx - 8], rdx ; store hi part
+    mov rdx, 368934881475
+    mov rax, r10
+    mul rdx
+    shr edx, 1
+    imul rax, rdx, 100000000
+    sub r10, rax ; get remainder
+    mov rdx, 4153837486827862103
+    mov rax, r12
+    mul rdx
+    mov [rcx - 16], r10 ; store middle part
+    shr rdx, 51 ; n / 1e16
+    mov [rcx - 24], rdx ; store leftmost part
+    xor rdx, rdx
+    mov [rcx - 32], rdx ; store zero
+
+    vmovdqa ymm0, [rcx - 32] ; now 3 x 8
+    ; divide it on 1e4
+    vbroadcastsd ymm3, [div1e4_number_64bit]
+    vpmuludq ymm4, ymm0, ymm3 ; ymm4 = ?? ?? AA BB AA BB AA BB | 64 bit
+    vpsrlq ymm5, ymm4, 45     ; ymm5 = ?? ?? 00 XX 00 XX 00 XX | 64 bit  XX = 32bit/1e4
+    vbroadcastsd ymm3, [mul1e4_number_64bit]
+    vpmuludq ymm4, ymm5, ymm3 ; ymm4 = ?? ?? 00 YY 00 YY 00 YY | 64 bit  YY = round(32bit, 1e4)
+    vpsubq ymm0, ymm0, ymm4   ; ymm0 = ?? ?? 00 RR 00 RR 00 RR | 64 bit  RR = 32bit%1e4
+    vpsllq ymm0, ymm0, 32     ; ymm0 = ?? ?? XX 00 XX 00 XX 00 | 64 bit  XX = 32bit/1e4
+    vpor ymm0, ymm0, ymm5     ; ymm0 = ?? ?? XX RR XX RR XX RR | 32 bit, 1e4
+    ; divide it on 1e2
+    vpsrld ymm4, ymm0, 2      ; divide on 4 : n / 4 / 25 [100 = 4 * 25]
+    vbroadcastsd ymm3, [div1e2_number_32bit]
+
+    ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    vpmulld ymm4, ymm4, ymm3  ; ymm4 = multiplication result | 32 bit
+
+    vpsrld ymm5, ymm4, 17     ; ymm5 = result of division    | 32 bit 16bit/1e2
+    vbroadcastsd ymm3, [mul1e2_number_32bit]
+    
+    ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    vpmulld ymm4, ymm5, ymm3  ; ymm4 = multiplication result | 32 bit round(16bit, 1e2)
+    
+    vpsubd ymm0, ymm0, ymm4   ; ymm0 = n - round(n, 1e2)     | 32 bit 16bit%1e2
+    vpslld ymm0, ymm0, 16     ; ymm0 = ... X 0 X 0 X 0       | 32 bit, hi16bit = 16bit/1e2
+    vpor ymm0, ymm0, ymm5     ; ymm0 = ... X R X R X R       | 16 bit, 1e2
+    ; convert them to numbers
+    vbroadcastsd ymm3, [div1e1_number_16bit]
+    vpmullw ymm4, ymm0, ymm3
+    vpsrlw ymm5, ymm4, 11      ; ymm5 = 16bit/10
+    vbroadcastsd ymm3, [mul1e1_number_16bit]
+    vpmullw ymm4, ymm5, ymm3  ; ymm4 = round(16bit, 10)
+    vpsubw ymm0, ymm0, ymm4   ; ymm0 = 16bit%10
+    vpsllw ymm0, ymm0, 8      ; ymm0 = high number
+    vpor ymm0, ymm0, ymm5
+    vbroadcastsd ymm3, [number_print_shift]
+    ; get mask of used values
+    vpxor ymm4, ymm4, ymm4
+    vpcmpeqb ymm5, ymm4, ymm0
+    vpmovmskb eax, ymm5
+    not eax
+    vpaddb ymm0, ymm0, ymm3   ; ymm0 = string
+    vmovdqa [rcx - 32], ymm0
+    ; get position of first non zero
+    tzcnt eax, eax
+    ; eax = 32 - length of number
+    ; so, calculate padding:
+    vmovdqu ymm0, [rcx + rax - 32]
+    lea rdx, [r8 + rax - 32] ; rdx = total width
+    cmp rdx, 0
+    jle .integer_skip_first_padding
+    lea rcx, [rsi + rdx]
+    call .padding_proc
+.integer_skip_first_padding:
+    ; now, store to rsi
+    vmovdqu [rsi], ymm0
+    neg rax ; rax = length - 32
+    lea rsi, [rsi + rax + 32]
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
 
 
 ; --------------------------------------------------------- percent -----------------------------------------------------------
@@ -858,6 +1256,24 @@ end if
 
 macro printf_core_data fn_name {
 
+div1e4_number_64bit:
+    dq 3518437209
+mul1e4_number_64bit:
+    dq 10000
+
+div1e2_number_32bit:
+    dd 5243, 5243
+mul1e2_number_32bit:
+    dd 100, 100
+
+div1e1_number_16bit:
+    dw 205, 205, 205, 205
+mul1e1_number_16bit:
+    dw 10, 10, 10, 10
+
+number_print_shift:
+    db "00000000000000000000000000000000"
+
 float_mantiss_base:
     dq 0x000FFFFFFFFFFFFF
 
@@ -909,12 +1325,12 @@ final_jump_table:
     dq fn_name#.switch_default; 'A'
     dq fn_name#.switch_default; 'B'
     dq fn_name#.switch_char; 'C'
-    dq fn_name#.switch_default; 'D'
+    dq fn_name#.switch_integer; 'D'
     dq fn_name#.switch_float; 'E'
     dq fn_name#.switch_float; 'F'
     dq fn_name#.switch_float; 'G'
     dq fn_name#.switch_default; 'H'
-    dq fn_name#.switch_default; 'I'
+    dq fn_name#.switch_integer; 'I'
     dq fn_name#.switch_default; 'J'
     dq fn_name#.switch_default; 'K'
     dq fn_name#.switch_default; 'L'
