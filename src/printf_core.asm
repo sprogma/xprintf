@@ -43,8 +43,8 @@ F_LONG = 0x1
 F_LONG_LONG = 0x2
 F_SHORT = 0x4
 F_SHORT_SHORT = 0x8
-F_CAPITAL = 0x10
-F_NEGATIVE = 0x20
+F_NEGATIVE = 0x10
+F_CAPITAL = 0x20 ; fixed to 0x20, don't change
 F_SIGN = 0x40
 F_SPACE = 0x80
 F_PRECISION = 0x200
@@ -163,6 +163,9 @@ end if
     je .update_flag_short
     
     ; eax is already loaded
+    mov ecx, F_CAPITAL
+    andn ecx, eax, ecx
+    or rdi, rcx
     and eax, -33 ; normalize
     sub eax, 64 ; '@' = 0
 
@@ -1091,6 +1094,134 @@ end if
 
 ; ---------------------------------------------------------- inegers ---------------------------------------------------------
 
+
+; ------------------------------ %d --------------------------------
+.switch_signed_integer:
+    mov rax, [rbx]
+    test rdi, F_LONG
+    jnz .integer_signed_int64_from_32
+    movsxd rax, eax
+.integer_signed_int64_from_32:
+    add r14, 1 ; skip 'd'/'i'
+    add rbx, 8 ; move registers array forward
+
+    push rax
+
+    cqo
+    xor rax, rdx
+    sub rax, rdx ; rax = abs(rax)
+    
+if USE_AVX_INTEGER_PRINT
+    avx_print_d64
+    ; get position of first non zero
+    tzcnt eax, eax
+    ; eax = 32 - length of number
+    ; so, calculate padding:
+    pop r12
+    mov edx, '+'
+    mov r10d, '-'
+    test r12, r12
+    lea r12, [rax - 1]
+    cmovs edx, r10d
+    mov r10, rax
+    mov [rcx + rax - 33], dl
+    cmovs rax, r12
+    test rdi, F_SIGN
+    cmovnz rax, r12
+        
+    ; check sign, it is set, add it to ymm0
+    vmovdqu ymm0, [rcx + rax - 32]
+    ; number is in ymm0
+    ; length in rax (32-length)
+    lea r12, [r8 + rax - 32] ; r12 = total width
+    cmp r12, 0
+    jle .signed_integer_skip_first_padding
+    lea rcx, [rsi + r12]
+    call .padding_proc
+    ; ! if padding was with zeros, we need to set sign to new position
+    test rdi, F_ZERO
+    jz .signed_integer_skip_first_padding
+    ; test if there is sign
+    cmp r10, rax ; if r10 == rax, it wasn't changed
+    je .signed_integer_skip_first_padding
+    ; swap [rsi] and [rsi - r12]
+    neg r12
+    vmovdqu [rsi], ymm0
+    movzx r10d, byte [rsi]
+    movzx edx, byte [rsi + r12]
+    mov [rsi], dl
+    mov [rsi + r12], r10b
+    neg rax ; rax = length - 32
+    lea rsi, [rsi + rax + 32]
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.signed_integer_skip_first_padding:
+    ; now, store to rsi
+    vmovdqu [rsi], ymm0
+    neg rax ; rax = length - 32
+    lea rsi, [rsi + rax + 32]
+else
+    scl_print_d64
+
+    pop r12
+    mov rax, '+'
+    mov edx, '-'
+    test r12, r12
+    lea r12, [r10 - 1]
+    cmovs eax, edx
+    mov [r10 - 1], al
+    mov rax, r10
+    cmovs r10, r12
+    test rdi, F_SIGN
+    cmovnz r10, r12
+
+    xor rax, r10
+    
+    ; move number to destination
+    vmovdqu ymm0, [r10]
+    sub r10, rsp ; r10 = -actual width - 8 [becouse of POP!]
+    lea r12, [r8 + r10 + 8] ; update length from POP
+    cmp r12, 0 ; padding - actual width
+    jle .signed_integer_skip_first_padding
+    lea rcx, [rsi + r12]
+    call .padding_proc
+    
+    test rdi, F_ZERO
+    jz .signed_integer_skip_first_padding
+    ; test if there is sign
+    test rax, rax ; if r10 wasn't changed
+    jz .signed_integer_skip_first_padding
+    ; swap [rsi] and [rsi - r12]
+    vmovdqu [rsi], ymm0
+    neg r12
+    movzx eax, byte [rsi]
+    movzx edx, byte [rsi + r12]
+    mov [rsi], dl
+    mov [rsi + r12], al
+    sub rsi, r10
+    sub rsi, 8
+
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.signed_integer_skip_first_padding:
+    ; now, store to rsi
+    vmovdqu [rsi], ymm0
+    sub rsi, r10
+    sub rsi, 8
+end if
+
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+
+
+; ------------------------------ %u --------------------------------
 .switch_integer:
     mov rax, [rbx]
     test rdi, F_LONG
@@ -1098,9 +1229,212 @@ end if
     mov eax, eax
 .integer_int64_from_32:
 
-    add r14, 1 ; skip 'd'/'i'
+    add r14, 1 ; skip 'u'
     add rbx, 8 ; move registers array forward
 
+if USE_AVX_INTEGER_PRINT
+    avx_print_d64
+    ; get position of first non zero
+    tzcnt eax, eax
+    ; eax = 32 - length of number
+    ; so, calculate padding:
+    vmovdqu ymm0, [rcx + rax - 32]
+    ; number is in ymm0
+    ; length in rax (32-length)
+    lea rdx, [r8 + rax - 32] ; rdx = total width
+    cmp rdx, 0
+    jle .integer_skip_first_padding
+    lea rcx, [rsi + rdx]
+    call .padding_proc
+.integer_skip_first_padding:
+    ; now, store to rsi
+    vmovdqu [rsi], ymm0
+    neg rax ; rax = length - 32
+    lea rsi, [rsi + rax + 32]
+else
+    scl_print_d64
+    ; move number to destination
+    vmovdqu ymm0, [r10]
+    sub r10, rsp ; r10 = -actual width
+    lea rcx, [r8 + r10]
+    cmp rcx, 0 ; padding - actual width
+    jle .integer_skip_first_padding
+    lea rcx, [rsi + rcx]
+    call .padding_proc
+.integer_skip_first_padding:
+    ; now, store to rsi
+    vmovdqu [rsi], ymm0
+    sub rsi, r10
+end if
+    
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+
+; --------------------------------------------------------- percent -----------------------------------------------------------
+
+.switch_hex_integer:
+    mov rax, [rbx]
+    test rdi, F_LONG
+    jnz .integer_hex_int64_from_32
+    mov eax, eax
+.integer_hex_int64_from_32:
+
+    add r14, 1 ; skip 'x'/'X'
+    add rbx, 8 ; move registers array forward
+
+    ; get count of used bytes
+    mov r10, rax
+    or r10, 1
+    bsr r10, r10
+    shr r10, 2
+    add r10, 1 ; rdx = count of bytes
+
+    ; shift number
+    lea rcx, [4 * r10]
+    neg rcx
+    add rcx, 64
+    shl rax, cl
+
+    lea rcx, [hex_characters_low]
+    lea rdx, [hex_characters_hi]
+    test rdi, F_CAPITAL
+    cmovnz rcx, rdx
+    vmovdqa xmm6, [rcx]
+
+    vmovq xmm0, rax
+    vpunpcklbw xmm0, xmm0, xmm0 ; AB AB CD CD EF EF GH GH ...
+    vpsllw xmm3, xmm0, 12       ; B0 00 D0 00 F0 00 H0 00 ...
+    vpsrlw xmm4, xmm0, 12       ; 00 0A 00 0C 00 0E 00 0G ...
+    vpsrlw xmm5, xmm3, 4        ; 0B 00 0D 00 0F 00 0H 00 ...
+    vpxor xmm0, xmm5, xmm4      ; 0B 0A 0D 0C 0F 0E 0H 0G ...
+
+    vpshufb xmm0, xmm0, [hex_msk_shuffle]
+    vpshufb xmm0, xmm6, xmm0
+    
+
+    ; now, if there is 0x prefix, print it 
+    test rdi, F_ALTERNATE
+    jnz .hex_alternate
+
+    ; now, apply padding
+    lea rcx, [rsi + r8]
+    sub rcx, r10
+    cmp rcx, rsi
+    jle .hex_skip_forward_padding
+    call .padding_proc
+.hex_skip_forward_padding:
+
+    vmovdqu [rsi], xmm0 ; store number
+    add rsi, r10
+
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+
+.hex_alternate:
+    mov r12d, edi
+    and r12d, F_CAPITAL
+    shl r12d, 8
+    xor r12d, '0x'
+    
+    lea rcx, [r8 - 2]
+    sub rcx, r10
+    ; rcx = width of forward padding
+    jle .hex_alternate_forward_no_padding
+    
+    lea rcx, [rsi + rcx]
+
+    ; now, if there is spaces, check it
+    test rdi, F_ZERO
+    jnz .hex_alternate_zeros
+    
+    call .padding_proc
+.hex_alternate_forward_no_padding:
+    
+    mov [rsi], r12w
+    add rsi, 2
+
+    vmovdqu [rsi], ymm0
+    add rsi, r10
+
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+.hex_alternate_zeros:
+
+    mov [rsi], r12w
+    add rsi, 2
+    
+    call .padding_proc
+
+    vmovdqu [rsi], ymm0
+    add rsi, r10
+
+    cmp r8, 0
+    jl .check_end_padding
+    jmp .main_loop
+    
+
+; --------------------------------------------------------- percent -----------------------------------------------------------
+
+.insert_percent:
+    mov [rsi], byte '%'
+    add rsi, 1 ; update destination buffer
+    add r14, 2 ; skip '%'
+    jmp .main_loop
+
+; --------------------------------------------------------- helpers -----------------------------------------------------------
+
+.check_end_padding:
+    ; r11 = rsi at beginning
+    sub r11, rsi ; now, r11 = - count of chars
+    sub r11, r8 ; now, r11 = -count - (-width) = -count + width = width - count
+    cmp r11, 0 ; if it is negative, we need to pad it.
+    jle .main_loop
+    lea rcx, [rsi + r11]        
+    
+    call .padding_proc
+    jmp .main_loop
+
+    ; rsi = destination
+    ; rcx = end position [pointer] - this addresss dont guaranted to be set.
+    ; ymm15 = filler [prepared by flags loop]
+.padding_proc:
+    ; moves rsi to rcx.
+    vmovdqu [rsi], ymm15
+    add rsi, 32
+    cmp rsi, rcx
+    jge .padding_done
+    and rsi, -32 ; align it
+    lea rdx, [rsi + 128]
+    cmp rdx, rcx
+    ja .repeat_small_set
+.repeat_set:
+    vmovdqa [rdx-128], ymm15
+    vmovdqa [rdx-96], ymm15
+    vmovdqa [rdx-64], ymm15
+    vmovdqa [rdx-32], ymm15
+    add rdx, 128
+    cmp rdx, rcx
+    jbe .repeat_set
+    lea rsi, [rdx - 128]
+.repeat_small_set:
+    vmovdqa [rsi], ymm15
+    add rsi, 32
+    cmp rsi, rcx
+    jb .repeat_small_set
+.padding_done:
+    mov rsi, rcx
+    ret
+}
+
+; moves number to ymm0
+; moves it's mask to rax [mask]
+; moves it is located at rcx-32.
+macro avx_print_d64 {
     ; simply allocate buffer and use same technology as in %e
     ; N <=20 digits
     ; N = 3x8 digits = 3 x 32bit
@@ -1109,7 +1443,6 @@ end if
     ; to bct + store ...
 
     ; break by 8 (2 divisions)
-    
     mov rcx, rsp
     and rcx, -32 ; get aligned buffer
     
@@ -1180,81 +1513,65 @@ end if
     not eax
     vpaddb ymm0, ymm0, ymm3   ; ymm0 = string
     vmovdqa [rcx - 32], ymm0
-    ; get position of first non zero
-    tzcnt eax, eax
-    ; eax = 32 - length of number
-    ; so, calculate padding:
-    vmovdqu ymm0, [rcx + rax - 32]
-    lea rdx, [r8 + rax - 32] ; rdx = total width
-    cmp rdx, 0
-    jle .integer_skip_first_padding
-    lea rcx, [rsi + rdx]
-    call .padding_proc
-.integer_skip_first_padding:
-    ; now, store to rsi
-    vmovdqu [rsi], ymm0
-    neg rax ; rax = length - 32
-    lea rsi, [rsi + rax + 32]
+}
+
+; moves number to ymm0
+; it's position is in r10
+; it's begining is at rsp-1 [so width = rsp-r10]
+macro scl_print_d64 {
+    ; loop as in %e
+    ; divide rax / 100
+    mov rcx, 0x28f5c28f5c28f5c3 ; divisor [gained from clang]
+    mov r10, rsp
+@@:
+    ; rax = value
+    ; rcx = divisor
+    ; r10 = destination
+
+    ; /= 100
+    mov r12, rax
+    shr rax, 0x2
+    mul rcx
+    mov rax, rdx
+    shr rax, 0x2
+    imul rdx, rax, 0x64
+    sub rdx, r12
+    neg rdx
+    ; now, rdx = remainder, rax = result
+
+    lea r12, [integer_numbers]
+    movzx r12, word [r12 + 2 * rdx]
     
-    cmp r8, 0
-    jl .check_end_padding
-    jmp .main_loop
-
-
-; --------------------------------------------------------- percent -----------------------------------------------------------
-
-.insert_percent:
-    mov [rsi], byte '%'
-    add rsi, 1 ; update destination buffer
-    add r14, 2 ; skip '%'
-    jmp .main_loop
-
-; --------------------------------------------------------- helpers -----------------------------------------------------------
-
-.check_end_padding:
-    ; r11 = rsi at beginning
-    sub r11, rsi ; now, r11 = - count of chars
-    sub r11, r8 ; now, r11 = -count - (-width) = -count + width = width - count
-    cmp r11, 0 ; if it is negative, we need to pad it.
-    jle .main_loop
-    lea rcx, [rsi + r11]        
+    sub r10, 2
+    mov [r10], r12w
     
-    call .padding_proc
-    jmp .main_loop
-
-    ; rsi = destination
-    ; rcx = end position [pointer] - this addresss dont guaranted to be set.
-    ; ymm15 = filler [prepared by flags loop]
-.padding_proc:
-    ; moves rsi to rcx.
-    vmovdqu [rsi], ymm15
-    add rsi, 32
-    cmp rsi, rcx
-    jge .padding_done
-    and rsi, -32 ; align it
-    lea rdx, [rsi + 128]
-    cmp rdx, rcx
-    ja .repeat_small_set
-.repeat_set:
-    vmovdqa [rdx-128], ymm15
-    vmovdqa [rdx-96], ymm15
-    vmovdqa [rdx-64], ymm15
-    vmovdqa [rdx-32], ymm15
-    add rdx, 128
-    cmp rdx, rcx
-    jbe .repeat_set
-    lea rsi, [rdx - 128]
-.repeat_small_set:
-    vmovdqa [rsi], ymm15
-    add rsi, 32
-    cmp rsi, rcx
-    jb .repeat_small_set
-.padding_done:
-    mov rsi, rcx
-    ret
+    test rax, rax
+    jnz @b
+    
+    ; check if we printed leading '0'
+    cmp byte [r10], '0'+1
+    adc r10, 0
 }
 
 macro printf_core_data fn_name {
+
+align 16
+mask_0F:
+    dw 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF
+mask_F0:
+    dw 0xF00, 0xF00, 0xF00, 0xF00, 0xF00, 0xF00, 0xF00, 0xF00
+
+align 16
+hex_characters_low:
+    db "0123456789abcdef"
+    
+align 16
+hex_characters_hi:
+    db "0123456789ABCDEF"
+
+align 16
+hex_msk_shuffle:
+    db 14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1
 
 div1e4_number_64bit:
     dq 3518437209
@@ -1325,12 +1642,12 @@ final_jump_table:
     dq fn_name#.switch_default; 'A'
     dq fn_name#.switch_default; 'B'
     dq fn_name#.switch_char; 'C'
-    dq fn_name#.switch_integer; 'D'
+    dq fn_name#.switch_signed_integer; 'D'
     dq fn_name#.switch_float; 'E'
     dq fn_name#.switch_float; 'F'
     dq fn_name#.switch_float; 'G'
     dq fn_name#.switch_default; 'H'
-    dq fn_name#.switch_integer; 'I'
+    dq fn_name#.switch_signed_integer; 'I'
     dq fn_name#.switch_default; 'J'
     dq fn_name#.switch_default; 'K'
     dq fn_name#.switch_default; 'L'
@@ -1345,7 +1662,7 @@ final_jump_table:
     dq fn_name#.switch_integer; 'U'
     dq fn_name#.switch_default; 'V'
     dq fn_name#.switch_default; 'W'
-    dq fn_name#.switch_default; 'X'
+    dq fn_name#.switch_hex_integer; 'X'
     dq fn_name#.switch_default; 'Y'
     dq fn_name#.switch_default; 'Z'
     dq fn_name#.switch_default; '['
