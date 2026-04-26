@@ -193,6 +193,38 @@ CREATE_TEST(21, \
     "%.5000e", \
     3.14159265358979 \
 ) \
+CREATE_TEST(22, \
+    zero %u, \
+    zero %u, \
+    1.0, \
+    1024, \
+    "%u", \
+    0 \
+) \
+CREATE_TEST(23, \
+    little %u, \
+    little %u, \
+    1.0, \
+    1024, \
+    "%u", \
+    179 \
+) \
+CREATE_TEST(24, \
+    medium %u, \
+    medium %u, \
+    1.0, \
+    1024, \
+    "%u", \
+    998244353 \
+) \
+CREATE_TEST(25, \
+    large %u, \
+    large %u, \
+    1.0, \
+    1024, \
+    "%ull", \
+    18446744073709551615ull \
+) \
 /**/
 
 

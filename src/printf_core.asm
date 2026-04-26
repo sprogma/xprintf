@@ -1342,7 +1342,7 @@ final_jump_table:
     dq fn_name#.switch_default; 'R'
     dq fn_name#.switch_string; 'S'
     dq fn_name#.switch_default; 'T'
-    dq fn_name#.switch_default; 'U'
+    dq fn_name#.switch_integer; 'U'
     dq fn_name#.switch_default; 'V'
     dq fn_name#.switch_default; 'W'
     dq fn_name#.switch_default; 'X'

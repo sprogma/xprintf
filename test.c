@@ -68,6 +68,7 @@ int main()
     xprintf("Hello %% %corld%c, |%-10s|\n", 'W', '!', "What?");
 
     // %c
+    puts(">>> %c");
     TEST_A(1024, "%c", 'Z')
     TEST_A(1024, "%c%c", 'A', 'B')
     TEST_A(1024, "aa%caa", 'Z')
@@ -81,9 +82,15 @@ int main()
     TEST_B(1024, "aa%0-100caa", 'Z')
 
     // %%
+    puts(">>> %%");
     TEST_A(1024, "oo%%oo")
+    TEST_A(1024, "%%")
+    TEST_A(1024, "%%%%")
+    TEST_A(1024, "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    TEST_A(1024, "%%0%%1%%3%%")
 
     // formats
+    puts(">>> formats");
     TEST_A(1024, "")
     TEST_A(1024, "ooo")
     TEST_A(1024, "o00000000000000000000000000000000000000000oo")
@@ -96,6 +103,7 @@ int main()
     TEST_A(1024, "aa%*caa", -10, 'Z')
 
     // %s
+    puts(">>> %s");
     TEST_A(1024, "%s", "xyz")
     TEST_A(1024, "%s", "foooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
     TEST_A(1024, "%s", "fooooooooooooooooooooooooooooooooooooooooooooooooooooooo000000000000000000000000000000000000o")
@@ -130,6 +138,7 @@ int main()
     TEST_B(1024, "aa%0-100saa", "fopo")
 
     // %f
+    puts(">>> %f");
     TEST_A(1024, "%.300f", 0.0)
     TEST_A(1024, "%300.100f", 0.0)
     TEST_A(1024, "%.0f", 0.0)
@@ -150,12 +159,28 @@ int main()
 
 
     // %e
+    puts(">>> %e");
     TEST_A(1024, "%e", 1e300)
     TEST_A(1024, "%.4e", -1e300)
     TEST_A(1024, "%.e", -1e300)
     TEST_A(1024, "%#.e", -1e300)
     TEST_A(1024, "%+#.e", 1e300)
     TEST_A(1024, "%#-100.e", 1e300)
+
+    // %u
+    puts(">>> %u");
+    TEST_A(1024, "%u", 1)
+    TEST_A(1024, "%u", 10)
+    TEST_A(1024, "%u", 100)
+    TEST_A(1024, "%u", 1000)
+    TEST_A(1024, "%u", 179)
+    TEST_A(1024, "%u", UINT32_MAX)
+    TEST_A(1024, "%lu", UINT64_MAX)
+    TEST_A(1024, "%u", -1)
+    TEST_A(1024, "%llu", (long long)-1)
+    TEST_A(1024, "%100u", 179)
+    TEST_A(1024, "%-100u", 179)
+    TEST_A(1024, "%10llu", 1000000000000000llu)
     
 
 
