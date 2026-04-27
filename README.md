@@ -144,36 +144,39 @@
 |               | m50 cycles |          57     |          67     |          46     |          68     |
 |               | avg time   |       22.239 ns |       27.371 ns |       17.670 ns |       22.285 ns |
 
-```
 
 function xsprintf             scored:
-         30 medals in category min_cycles
-         29 medals in category m50_cycles
-         38 medals in category avg_time
+* 30 medals in category min_cycles
+* 29 medals in category m50_cycles
+* 38 medals in category avg_time
+
 function sprintf              scored:
-          1 medals in category min_cycles
-          1 medals in category m50_cycles
-          1 medals in category avg_time
+*  1 medals in category min_cycles
+*  1 medals in category m50_cycles
+*  1 medals in category avg_time
+
 function stbsp_sprintf        scored:
-         16 medals in category min_cycles
-         16 medals in category m50_cycles
-          5 medals in category avg_time
+* 16 medals in category min_cycles
+* 16 medals in category m50_cycles
+*  5 medals in category avg_time
 
 Function scores: [min]
-  xsprintf            :       5814 [     +5012]
-  sprintf             :      66479 [    +65677]
-  stbsp_sprintf       :      18558 [    +17756]
+* xsprintf            :       5814 [     +5012]
+* sprintf             :      66479 [    +65677]
+* stbsp_sprintf       :      18558 [    +17756]
+
 Function scores: [m50]
-  xsprintf            :       6345 [     +5461]
-  sprintf             :      73194 [    +72310]
-  stbsp_sprintf       :      19898 [    +19014]
+* xsprintf            :       6345 [     +5461]
+* sprintf             :      73194 [    +72310]
+* stbsp_sprintf       :      19898 [    +19014]
+
 Function scores: [avg]
-  xsprintf            :      2319.16 ns
-  sprintf             :     29900.33 ns
-  stbsp_sprintf       :      8470.55 ns
+* xsprintf            :      2319.16 ns
+* sprintf             :     29900.33 ns
+* stbsp_sprintf       :      8470.55 ns
 
 
-
+```
 
 ---- gathering cpu information ----
 min loop overhead: 31
