@@ -1,6 +1,179 @@
 # --- result of run ---
 
 
+
+| Realization \ Test         | general         | empty call      | medium parts    | long parts      |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |         135     |           4     |          63     |         572     |
+|                 m50 cycles |         146     |          10     |          75     |         592     |
+|                 avg time   |       45.637 ns |        1.447 ns |       23.373 ns |      248.552 ns |
+| sprintf         min cycles |         298     |          26     |         101     |         617     |
+|                 m50 cycles |         337     |          34     |         111     |         654     |
+|                 avg time   |      135.450 ns |        9.083 ns |       44.086 ns |      275.383 ns |
+| stbsp_sprintf   min cycles |         229     |          14     |         117     |        3985     |
+|                 m50 cycles |         257     |          18     |         131     |        4057     |
+|                 avg time   |      109.693 ns |        3.981 ns |       58.529 ns |     1806.055 ns |
+
+
+| Realization \ Test         | group parsing   | bad groups      | variable width  | little space    |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |         259     |         652     |         239     |         267     |
+|                 m50 cycles |         269     |         674     |         290     |         280     |
+|                 avg time   |      113.607 ns |      287.583 ns |      112.286 ns |      117.319 ns |
+| sprintf         min cycles |         623     |         759     |         672     |         714     |
+|                 m50 cycles |         643     |         867     |         849     |         870     |
+|                 avg time   |      276.801 ns |      376.516 ns |      409.696 ns |      351.041 ns |
+| stbsp_sprintf   min cycles |         661     |         824     |         904     |         946     |
+|                 m50 cycles |         798     |        1003     |        1025     |        1057     |
+|                 avg time   |      334.894 ns |      423.376 ns |      428.044 ns |      470.322 ns |
+
+
+| Realization \ Test         | large space     | large zero      | little -padd    | large -padd     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |         200     |         200     |         310     |         201     |
+|                 m50 cycles |         221     |         222     |         337     |         221     |
+|                 avg time   |       93.404 ns |       92.932 ns |      137.956 ns |       96.229 ns |
+| sprintf         min cycles |         245     |         245     |         761     |         242     |
+|                 m50 cycles |         251     |         251     |         822     |         249     |
+|                 avg time   |       99.348 ns |       95.632 ns |      363.146 ns |      105.767 ns |
+| stbsp_sprintf   min cycles |         227     |         227     |        1009     |         231     |
+|                 m50 cycles |         233     |         233     |        1159     |         239     |
+|                 avg time   |       87.798 ns |       88.867 ns |      500.983 ns |       90.271 ns |
+
+
+| Realization \ Test         | empty string-1  | empty string-2  | empty string-3  | medium string   |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          26     |          28     |          28     |          51     |
+|                 m50 cycles |          32     |          38     |          36     |          59     |
+|                 avg time   |        6.411 ns |        8.396 ns |        6.868 ns |       15.306 ns |
+| sprintf         min cycles |          42     |          42     |          45     |          91     |
+|                 m50 cycles |          46     |          48     |          51     |          99     |
+|                 avg time   |       16.844 ns |       15.759 ns |       16.435 ns |       38.253 ns |
+| stbsp_sprintf   min cycles |          24     |          24     |          24     |         138     |
+|                 m50 cycles |          30     |          30     |          30     |         146     |
+|                 avg time   |       11.581 ns |       12.019 ns |       12.216 ns |       63.890 ns |
+
+
+| Realization \ Test         | large string    | small %float    | precise %float  | very %float     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |         824     |         180     |         180     |         182     |
+|                 m50 cycles |         906     |         186     |         188     |         189     |
+|                 avg time   |      418.506 ns |       47.595 ns |       48.906 ns |       50.991 ns |
+| sprintf         min cycles |         641     |         134     |         776     |       28785     |
+|                 m50 cycles |         682     |         151     |         861     |       31624     |
+|                 avg time   |      284.267 ns |       60.415 ns |      355.500 ns |    12870.963 ns |
+| stbsp_sprintf   min cycles |        7133     |          99     |         105     |         149     |
+|                 m50 cycles |        7423     |         107     |         111     |         158     |
+|                 avg time   |     3246.073 ns |       32.154 ns |       43.759 ns |       62.185 ns |
+
+
+| Realization \ Test         | small %e float  | one digit %e    | normal %e float | large %e float  |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          68     |          58     |          73     |         115     |
+|                 m50 cycles |          73     |          63     |          79     |         137     |
+|                 avg time   |       14.564 ns |       12.046 ns |       19.033 ns |       43.712 ns |
+| sprintf         min cycles |         135     |         101     |         204     |       28729     |
+|                 m50 cycles |         150     |         111     |         237     |       31616     |
+|                 avg time   |       58.395 ns |       45.416 ns |      102.460 ns |    12896.735 ns |
+| stbsp_sprintf   min cycles |         101     |          86     |         119     |         152     |
+|                 m50 cycles |         107     |          93     |         127     |         160     |
+|                 avg time   |       33.270 ns |       27.451 ns |       41.534 ns |       59.704 ns |
+
+
+| Realization \ Test         | zero %u         | little %u       | medium %u       | large %u        |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          34     |          38     |          47     |          65     |
+|                 m50 cycles |          40     |          44     |          54     |          71     |
+|                 avg time   |        8.345 ns |        9.573 ns |       10.160 ns |       14.293 ns |
+| sprintf         min cycles |          50     |          54     |          72     |         109     |
+|                 m50 cycles |          56     |          61     |          79     |         117     |
+|                 avg time   |       20.068 ns |       23.341 ns |       25.531 ns |       36.632 ns |
+| stbsp_sprintf   min cycles |          34     |          36     |          52     |          62     |
+|                 m50 cycles |          38     |          42     |          58     |          68     |
+|                 avg time   |       15.704 ns |       14.106 ns |       20.079 ns |       25.304 ns |
+
+
+| Realization \ Test         | zero %d         | little %d       | medium %d       | large %d        |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          36     |          40     |          50     |          40     |
+|                 m50 cycles |          41     |          44     |          54     |          46     |
+|                 avg time   |        9.243 ns |        9.108 ns |       10.419 ns |       10.071 ns |
+| sprintf         min cycles |          50     |          55     |          75     |          58     |
+|                 m50 cycles |          56     |          61     |          83     |          63     |
+|                 avg time   |       21.766 ns |       26.739 ns |       24.517 ns |       22.556 ns |
+| stbsp_sprintf   min cycles |          32     |          34     |          52     |          36     |
+|                 m50 cycles |          38     |          40     |          57     |          42     |
+|                 avg time   |       13.291 ns |       13.181 ns |       18.698 ns |       16.230 ns |
+
+
+| Realization \ Test         | large %+d       | large %5000d    | large %+5000d   | large %+05000d  |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          42     |          83     |          85     |          87     |
+|                 m50 cycles |          48     |          91     |          89     |          93     |
+|                 avg time   |        9.480 ns |       34.241 ns |       33.052 ns |       33.334 ns |
+| sprintf         min cycles |          59     |         122     |         123     |         127     |
+|                 m50 cycles |          65     |         128     |         130     |         133     |
+|                 avg time   |       24.084 ns |       51.060 ns |       48.589 ns |       49.155 ns |
+| stbsp_sprintf   min cycles |          38     |         105     |         105     |         107     |
+|                 m50 cycles |          44     |         111     |         111     |         113     |
+|                 avg time   |       15.920 ns |       39.173 ns |       38.684 ns |       38.179 ns |
+
+
+| Realization \ Test         | large %+020d    | zero %x         | little %x       | medium %x       |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          47     |          28     |          28     |          28     |
+|                 m50 cycles |          53     |          34     |          34     |          36     |
+|                 avg time   |       13.427 ns |        6.102 ns |        6.127 ns |        6.571 ns |
+| sprintf         min cycles |          69     |          52     |          55     |          58     |
+|                 m50 cycles |          77     |          57     |          60     |          62     |
+|                 avg time   |       29.250 ns |       21.234 ns |       22.303 ns |       23.624 ns |
+| stbsp_sprintf   min cycles |          47     |          26     |          28     |          40     |
+|                 m50 cycles |          52     |          34     |          34     |          46     |
+|                 avg time   |       21.567 ns |       12.383 ns |       12.790 ns |       17.049 ns |
+
+
+| Realization \ Test         | large %x        | large %#x       | padded %x       | padded %llx     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
+| xsprintf        min cycles |          29     |          30     |          30     |          32     |
+|                 m50 cycles |          36     |          36     |          38     |          40     |
+|                 avg time   |        7.002 ns |        7.560 ns |        7.413 ns |       10.978 ns |
+| sprintf         min cycles |          63     |          68     |          62     |          70     |
+|                 m50 cycles |          71     |          75     |          69     |          77     |
+|                 avg time   |       32.945 ns |       31.445 ns |       32.101 ns |       30.001 ns |
+| stbsp_sprintf   min cycles |          50     |          52     |          40     |          54     |
+|                 m50 cycles |          57     |          67     |          46     |          68     |
+|                 avg time   |       22.239 ns |       27.371 ns |       17.670 ns |       22.285 ns |
+
+
+function xsprintf             scored:
+         30 medals in category min_cycles
+         29 medals in category m50_cycles
+         38 medals in category avg_time
+function sprintf              scored:
+          1 medals in category min_cycles
+          1 medals in category m50_cycles
+          1 medals in category avg_time
+function stbsp_sprintf        scored:
+         16 medals in category min_cycles
+         16 medals in category m50_cycles
+          5 medals in category avg_time
+
+Function scores: [min]
+  xsprintf            :       5814 [     +5012]
+  sprintf             :      66479 [    +65677]
+  stbsp_sprintf       :      18558 [    +17756]
+Function scores: [m50]
+  xsprintf            :       6345 [     +5461]
+  sprintf             :      73194 [    +72310]
+  stbsp_sprintf       :      19898 [    +19014]
+Function scores: [avg]
+  xsprintf            :      2319.16 ns
+  sprintf             :     29900.33 ns
+  stbsp_sprintf       :      8470.55 ns
+
+
+
+
 ---- gathering cpu information ----
 min loop overhead: 31
 
@@ -1939,173 +2112,3 @@ min loop overhead: 31
 ~  min/med:          125.9%      (raw        116.5%  )
 ~  dev:        1.230e+06         (raw  1.230e+06     )
   test details: time: 500083182 ns, 22440000 cycles;  clocks: 605417792 (832647792 raw) sum, 7330000 cycles
-
-
-| Realization \ Test         | general         | empty call      | medium parts    | long parts      |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |         135     |           4     |          63     |         572     |
-|                 m50 cycles |         146     |          10     |          75     |         592     |
-|                 avg time   |       45.637 ns |        1.447 ns |       23.373 ns |      248.552 ns |
-| sprintf         min cycles |         298     |          26     |         101     |         617     |
-|                 m50 cycles |         337     |          34     |         111     |         654     |
-|                 avg time   |      135.450 ns |        9.083 ns |       44.086 ns |      275.383 ns |
-| stbsp_sprintf   min cycles |         229     |          14     |         117     |        3985     |
-|                 m50 cycles |         257     |          18     |         131     |        4057     |
-|                 avg time   |      109.693 ns |        3.981 ns |       58.529 ns |     1806.055 ns |
-
-
-| Realization \ Test         | group parsing   | bad groups      | variable width  | little space    |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |         259     |         652     |         239     |         267     |
-|                 m50 cycles |         269     |         674     |         290     |         280     |
-|                 avg time   |      113.607 ns |      287.583 ns |      112.286 ns |      117.319 ns |
-| sprintf         min cycles |         623     |         759     |         672     |         714     |
-|                 m50 cycles |         643     |         867     |         849     |         870     |
-|                 avg time   |      276.801 ns |      376.516 ns |      409.696 ns |      351.041 ns |
-| stbsp_sprintf   min cycles |         661     |         824     |         904     |         946     |
-|                 m50 cycles |         798     |        1003     |        1025     |        1057     |
-|                 avg time   |      334.894 ns |      423.376 ns |      428.044 ns |      470.322 ns |
-
-
-| Realization \ Test         | large space     | large zero      | little -padd    | large -padd     |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |         200     |         200     |         310     |         201     |
-|                 m50 cycles |         221     |         222     |         337     |         221     |
-|                 avg time   |       93.404 ns |       92.932 ns |      137.956 ns |       96.229 ns |
-| sprintf         min cycles |         245     |         245     |         761     |         242     |
-|                 m50 cycles |         251     |         251     |         822     |         249     |
-|                 avg time   |       99.348 ns |       95.632 ns |      363.146 ns |      105.767 ns |
-| stbsp_sprintf   min cycles |         227     |         227     |        1009     |         231     |
-|                 m50 cycles |         233     |         233     |        1159     |         239     |
-|                 avg time   |       87.798 ns |       88.867 ns |      500.983 ns |       90.271 ns |
-
-
-| Realization \ Test         | empty string-1  | empty string-2  | empty string-3  | medium string   |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          26     |          28     |          28     |          51     |
-|                 m50 cycles |          32     |          38     |          36     |          59     |
-|                 avg time   |        6.411 ns |        8.396 ns |        6.868 ns |       15.306 ns |
-| sprintf         min cycles |          42     |          42     |          45     |          91     |
-|                 m50 cycles |          46     |          48     |          51     |          99     |
-|                 avg time   |       16.844 ns |       15.759 ns |       16.435 ns |       38.253 ns |
-| stbsp_sprintf   min cycles |          24     |          24     |          24     |         138     |
-|                 m50 cycles |          30     |          30     |          30     |         146     |
-|                 avg time   |       11.581 ns |       12.019 ns |       12.216 ns |       63.890 ns |
-
-
-| Realization \ Test         | large string    | small %float    | precise %float  | very %float     |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |         824     |         180     |         180     |         182     |
-|                 m50 cycles |         906     |         186     |         188     |         189     |
-|                 avg time   |      418.506 ns |       47.595 ns |       48.906 ns |       50.991 ns |
-| sprintf         min cycles |         641     |         134     |         776     |       28785     |
-|                 m50 cycles |         682     |         151     |         861     |       31624     |
-|                 avg time   |      284.267 ns |       60.415 ns |      355.500 ns |    12870.963 ns |
-| stbsp_sprintf   min cycles |        7133     |          99     |         105     |         149     |
-|                 m50 cycles |        7423     |         107     |         111     |         158     |
-|                 avg time   |     3246.073 ns |       32.154 ns |       43.759 ns |       62.185 ns |
-
-
-| Realization \ Test         | small %e float  | one digit %e    | normal %e float | large %e float  |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          68     |          58     |          73     |         115     |
-|                 m50 cycles |          73     |          63     |          79     |         137     |
-|                 avg time   |       14.564 ns |       12.046 ns |       19.033 ns |       43.712 ns |
-| sprintf         min cycles |         135     |         101     |         204     |       28729     |
-|                 m50 cycles |         150     |         111     |         237     |       31616     |
-|                 avg time   |       58.395 ns |       45.416 ns |      102.460 ns |    12896.735 ns |
-| stbsp_sprintf   min cycles |         101     |          86     |         119     |         152     |
-|                 m50 cycles |         107     |          93     |         127     |         160     |
-|                 avg time   |       33.270 ns |       27.451 ns |       41.534 ns |       59.704 ns |
-
-
-| Realization \ Test         | zero %u         | little %u       | medium %u       | large %u        |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          34     |          38     |          47     |          65     |
-|                 m50 cycles |          40     |          44     |          54     |          71     |
-|                 avg time   |        8.345 ns |        9.573 ns |       10.160 ns |       14.293 ns |
-| sprintf         min cycles |          50     |          54     |          72     |         109     |
-|                 m50 cycles |          56     |          61     |          79     |         117     |
-|                 avg time   |       20.068 ns |       23.341 ns |       25.531 ns |       36.632 ns |
-| stbsp_sprintf   min cycles |          34     |          36     |          52     |          62     |
-|                 m50 cycles |          38     |          42     |          58     |          68     |
-|                 avg time   |       15.704 ns |       14.106 ns |       20.079 ns |       25.304 ns |
-
-
-| Realization \ Test         | zero %d         | little %d       | medium %d       | large %d        |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          36     |          40     |          50     |          40     |
-|                 m50 cycles |          41     |          44     |          54     |          46     |
-|                 avg time   |        9.243 ns |        9.108 ns |       10.419 ns |       10.071 ns |
-| sprintf         min cycles |          50     |          55     |          75     |          58     |
-|                 m50 cycles |          56     |          61     |          83     |          63     |
-|                 avg time   |       21.766 ns |       26.739 ns |       24.517 ns |       22.556 ns |
-| stbsp_sprintf   min cycles |          32     |          34     |          52     |          36     |
-|                 m50 cycles |          38     |          40     |          57     |          42     |
-|                 avg time   |       13.291 ns |       13.181 ns |       18.698 ns |       16.230 ns |
-
-
-| Realization \ Test         | large %+d       | large %5000d    | large %+5000d   | large %+05000d  |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          42     |          83     |          85     |          87     |
-|                 m50 cycles |          48     |          91     |          89     |          93     |
-|                 avg time   |        9.480 ns |       34.241 ns |       33.052 ns |       33.334 ns |
-| sprintf         min cycles |          59     |         122     |         123     |         127     |
-|                 m50 cycles |          65     |         128     |         130     |         133     |
-|                 avg time   |       24.084 ns |       51.060 ns |       48.589 ns |       49.155 ns |
-| stbsp_sprintf   min cycles |          38     |         105     |         105     |         107     |
-|                 m50 cycles |          44     |         111     |         111     |         113     |
-|                 avg time   |       15.920 ns |       39.173 ns |       38.684 ns |       38.179 ns |
-
-
-| Realization \ Test         | large %+020d    | zero %x         | little %x       | medium %x       |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          47     |          28     |          28     |          28     |
-|                 m50 cycles |          53     |          34     |          34     |          36     |
-|                 avg time   |       13.427 ns |        6.102 ns |        6.127 ns |        6.571 ns |
-| sprintf         min cycles |          69     |          52     |          55     |          58     |
-|                 m50 cycles |          77     |          57     |          60     |          62     |
-|                 avg time   |       29.250 ns |       21.234 ns |       22.303 ns |       23.624 ns |
-| stbsp_sprintf   min cycles |          47     |          26     |          28     |          40     |
-|                 m50 cycles |          52     |          34     |          34     |          46     |
-|                 avg time   |       21.567 ns |       12.383 ns |       12.790 ns |       17.049 ns |
-
-
-| Realization \ Test         | large %x        | large %#x       | padded %x       | padded %llx     |
-|----------------------------|-----------------|-----------------|-----------------|-----------------|
-| xsprintf        min cycles |          29     |          30     |          30     |          32     |
-|                 m50 cycles |          36     |          36     |          38     |          40     |
-|                 avg time   |        7.002 ns |        7.560 ns |        7.413 ns |       10.978 ns |
-| sprintf         min cycles |          63     |          68     |          62     |          70     |
-|                 m50 cycles |          71     |          75     |          69     |          77     |
-|                 avg time   |       32.945 ns |       31.445 ns |       32.101 ns |       30.001 ns |
-| stbsp_sprintf   min cycles |          50     |          52     |          40     |          54     |
-|                 m50 cycles |          57     |          67     |          46     |          68     |
-|                 avg time   |       22.239 ns |       27.371 ns |       17.670 ns |       22.285 ns |
-
-
-function xsprintf             scored:
-         30 medals in category min_cycles
-         29 medals in category m50_cycles
-         38 medals in category avg_time
-function sprintf              scored:
-          1 medals in category min_cycles
-          1 medals in category m50_cycles
-          1 medals in category avg_time
-function stbsp_sprintf        scored:
-         16 medals in category min_cycles
-         16 medals in category m50_cycles
-          5 medals in category avg_time
-
-Function scores: [min]
-  xsprintf            :       5814 [     +5012]
-  sprintf             :      66479 [    +65677]
-  stbsp_sprintf       :      18558 [    +17756]
-Function scores: [m50]
-  xsprintf            :       6345 [     +5461]
-  sprintf             :      73194 [    +72310]
-  stbsp_sprintf       :      19898 [    +19014]
-Function scores: [avg]
-  xsprintf            :      2319.16 ns
-  sprintf             :     29900.33 ns
-  stbsp_sprintf       :      8470.55 ns
