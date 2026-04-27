@@ -1942,6 +1942,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | general         | empty call      | medium parts    | long parts      |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |         135     |           4     |          63     |         572     |
 |                 m50 cycles |         146     |          10     |          75     |         592     |
 |                 avg time   |       45.637 ns |        1.447 ns |       23.373 ns |      248.552 ns |
@@ -1954,6 +1955,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | group parsing   | bad groups      | variable width  | little space    |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |         259     |         652     |         239     |         267     |
 |                 m50 cycles |         269     |         674     |         290     |         280     |
 |                 avg time   |      113.607 ns |      287.583 ns |      112.286 ns |      117.319 ns |
@@ -1966,6 +1968,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | large space     | large zero      | little -padd    | large -padd     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |         200     |         200     |         310     |         201     |
 |                 m50 cycles |         221     |         222     |         337     |         221     |
 |                 avg time   |       93.404 ns |       92.932 ns |      137.956 ns |       96.229 ns |
@@ -1978,6 +1981,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | empty string-1  | empty string-2  | empty string-3  | medium string   |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          26     |          28     |          28     |          51     |
 |                 m50 cycles |          32     |          38     |          36     |          59     |
 |                 avg time   |        6.411 ns |        8.396 ns |        6.868 ns |       15.306 ns |
@@ -1990,6 +1994,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | large string    | small %float    | precise %float  | very %float     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |         824     |         180     |         180     |         182     |
 |                 m50 cycles |         906     |         186     |         188     |         189     |
 |                 avg time   |      418.506 ns |       47.595 ns |       48.906 ns |       50.991 ns |
@@ -2002,6 +2007,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | small %e float  | one digit %e    | normal %e float | large %e float  |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          68     |          58     |          73     |         115     |
 |                 m50 cycles |          73     |          63     |          79     |         137     |
 |                 avg time   |       14.564 ns |       12.046 ns |       19.033 ns |       43.712 ns |
@@ -2014,6 +2020,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | zero %u         | little %u       | medium %u       | large %u        |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          34     |          38     |          47     |          65     |
 |                 m50 cycles |          40     |          44     |          54     |          71     |
 |                 avg time   |        8.345 ns |        9.573 ns |       10.160 ns |       14.293 ns |
@@ -2026,6 +2033,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | zero %d         | little %d       | medium %d       | large %d        |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          36     |          40     |          50     |          40     |
 |                 m50 cycles |          41     |          44     |          54     |          46     |
 |                 avg time   |        9.243 ns |        9.108 ns |       10.419 ns |       10.071 ns |
@@ -2038,6 +2046,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | large %+d       | large %5000d    | large %+5000d   | large %+05000d  |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          42     |          83     |          85     |          87     |
 |                 m50 cycles |          48     |          91     |          89     |          93     |
 |                 avg time   |        9.480 ns |       34.241 ns |       33.052 ns |       33.334 ns |
@@ -2050,6 +2059,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | large %+020d    | zero %x         | little %x       | medium %x       |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          47     |          28     |          28     |          28     |
 |                 m50 cycles |          53     |          34     |          34     |          36     |
 |                 avg time   |       13.427 ns |        6.102 ns |        6.127 ns |        6.571 ns |
@@ -2062,6 +2072,7 @@ min loop overhead: 31
 
 
 | Realization \ Test         | large %x        | large %#x       | padded %x       | padded %llx     |
+|----------------------------|-----------------|-----------------|-----------------|-----------------|
 | xsprintf        min cycles |          29     |          30     |          30     |          32     |
 |                 m50 cycles |          36     |          36     |          38     |          40     |
 |                 avg time   |        7.002 ns |        7.560 ns |        7.413 ns |       10.978 ns |
