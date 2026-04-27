@@ -144,6 +144,7 @@
 |               | m50 cycles |          57     |          67     |          46     |          68     |
 |               | avg time   |       22.239 ns |       27.371 ns |       17.670 ns |       22.285 ns |
 
+```
 
 function xsprintf             scored:
          30 medals in category min_cycles
@@ -2112,3 +2113,5 @@ min loop overhead: 31
 ~  min/med:          125.9%      (raw        116.5%  )
 ~  dev:        1.230e+06         (raw  1.230e+06     )
   test details: time: 500083182 ns, 22440000 cycles;  clocks: 605417792 (832647792 raw) sum, 7330000 cycles
+
+```
