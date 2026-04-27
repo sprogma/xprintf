@@ -55,6 +55,14 @@ CREATE_TEST(4, \
     'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z' \
 ) \
 CREATE_TEST(5, \
+    bad groups, \
+    tests many %c with 1 digit between them, \
+    3.0, \
+    1024, \
+    "X%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX%cX", \
+    'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z' \
+) \
+CREATE_TEST(6, \
     variable width, \
     tests many little paddings at %c, \
     2.0, \
@@ -62,7 +70,7 @@ CREATE_TEST(5, \
     "%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c%*c", \
     28, 'Z', 21, 'Z', 28, 'Z', 18, 'Z', 28, 'Z', 29, 'Z', 22, 'Z', 25, 'Z', 28, 'Z', 22, 'Z', 28, 'Z', 29, 'Z', 28, 'Z', 29, 'Z', 28, 'Z', 28, 'Z', 28, 'Z', 28, 'Z', 30, 'Z', 28, 'Z', 21, 'Z', 22, 'Z', 28, 'Z', 28, 'Z', 25, 'Z', 28, 'Z', 27, 'Z', 28, 'Z', 27, 'Z', 28, 'Z', 26, 'Z' \
 ) \
-CREATE_TEST(6, \
+CREATE_TEST(7, \
     little space, \
     tests many little paddings at %c, \
     2.0, \
@@ -70,7 +78,7 @@ CREATE_TEST(6, \
     "%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c%29c", \
     'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z' \
 ) \
-CREATE_TEST(7, \
+CREATE_TEST(8, \
     large space, \
     tests very big padding at %c, \
     2.0, \
@@ -78,7 +86,7 @@ CREATE_TEST(7, \
     "%20000c", \
     'Z' \
 ) \
-CREATE_TEST(8, \
+CREATE_TEST(9, \
     large zero, \
     tests very big padding by zeroes at %c, \
     2.0, \
@@ -86,7 +94,7 @@ CREATE_TEST(8, \
     "%020000c", \
     'Z' \
 ) \
-CREATE_TEST(9, \
+CREATE_TEST(10, \
     little -padd, \
     tests many small negative paddings at %c, \
     2.0, \
@@ -94,7 +102,7 @@ CREATE_TEST(9, \
     "%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c%-29c", \
     'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'Z' \
 ) \
-CREATE_TEST(10, \
+CREATE_TEST(11, \
     large -padd, \
     tests very big negative padding at %c, \
     2.0, \
@@ -102,7 +110,7 @@ CREATE_TEST(10, \
     "%-20000c", \
     'Z' \
 ) \
-CREATE_TEST(11, \
+CREATE_TEST(12, \
     empty string-1, \
     tests %.s variant, \
     1.0, \
@@ -110,7 +118,7 @@ CREATE_TEST(11, \
     "%.s", \
     NULL \
 ) \
-CREATE_TEST(12, \
+CREATE_TEST(13, \
     empty string-2, \
     tests %.*s variant, \
     1.0, \
@@ -119,7 +127,7 @@ CREATE_TEST(12, \
     0, \
     NULL \
 ) \
-CREATE_TEST(13, \
+CREATE_TEST(14, \
     empty string-3, \
     tests %s + "" variant, \
     1.0, \
@@ -127,7 +135,7 @@ CREATE_TEST(13, \
     "%s", \
     "" \
 ) \
-CREATE_TEST(14, \
+CREATE_TEST(15, \
     medium string, \
     tests 3-4 of 50-70 character strings, \
     1.5, \
@@ -137,7 +145,7 @@ CREATE_TEST(14, \
     "vaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar", \
     "oooooooooooooooooooooooooooooooobbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbuu" \
 ) \
-CREATE_TEST(15, \
+CREATE_TEST(16, \
     large string, \
     tests one large string, \
     2.0, \
@@ -145,7 +153,7 @@ CREATE_TEST(15, \
     "%s", \
     "fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooofooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo" \
 ) \
-CREATE_TEST(16, \
+CREATE_TEST(17, \
     small %float, \
     tests one float string, \
     1.5, \
@@ -153,7 +161,7 @@ CREATE_TEST(16, \
     "%f", \
     3.14159265358979 \
 ) \
-CREATE_TEST(17, \
+CREATE_TEST(18, \
     precise %float, \
     tests one float string, \
     1.5, \
@@ -161,7 +169,7 @@ CREATE_TEST(17, \
     "%.100f", \
     3.14159265358979 \
 ) \
-CREATE_TEST(18, \
+CREATE_TEST(19, \
     very %float, \
     tests one float string, \
     1.5, \
@@ -169,7 +177,7 @@ CREATE_TEST(18, \
     "%.5000f", \
     3.14159265358979 \
 ) \
-CREATE_TEST(19, \
+CREATE_TEST(20, \
     small %e float, \
     tests %e, \
     1.0, \
@@ -177,7 +185,7 @@ CREATE_TEST(19, \
     "%e", \
     3.14159265358979 \
 ) \
-CREATE_TEST(20, \
+CREATE_TEST(21, \
     one digit %e, \
     tests %.0e, \
     1.0, \
@@ -185,7 +193,7 @@ CREATE_TEST(20, \
     "%.0e", \
     3.14159265358979 \
 ) \
-CREATE_TEST(21, \
+CREATE_TEST(22, \
     normal %e float, \
     tests %.16e, \
     1.0, \
@@ -193,7 +201,7 @@ CREATE_TEST(21, \
     "%.16e", \
     3.14159265358979 \
 ) \
-CREATE_TEST(22, \
+CREATE_TEST(23, \
     large %e float, \
     tests %.5000e, \
     1.0, \
@@ -201,7 +209,7 @@ CREATE_TEST(22, \
     "%.5000e", \
     3.14159265358979 \
 ) \
-CREATE_TEST(23, \
+CREATE_TEST(24, \
     zero %u, \
     zero %u, \
     1.0, \
@@ -209,7 +217,7 @@ CREATE_TEST(23, \
     "%u", \
     0 \
 ) \
-CREATE_TEST(24, \
+CREATE_TEST(25, \
     little %u, \
     little %u, \
     1.0, \
@@ -217,7 +225,7 @@ CREATE_TEST(24, \
     "%u", \
     179 \
 ) \
-CREATE_TEST(25, \
+CREATE_TEST(26, \
     medium %u, \
     medium %u, \
     1.0, \
@@ -225,7 +233,7 @@ CREATE_TEST(25, \
     "%u", \
     998244353 \
 ) \
-CREATE_TEST(26, \
+CREATE_TEST(27, \
     large %u, \
     large %u, \
     1.0, \
@@ -233,7 +241,7 @@ CREATE_TEST(26, \
     "%llu", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(27, \
+CREATE_TEST(28, \
     zero %d, \
     zero %d, \
     1.0, \
@@ -241,7 +249,7 @@ CREATE_TEST(27, \
     "%d", \
     0 \
 ) \
-CREATE_TEST(28, \
+CREATE_TEST(29, \
     little %d, \
     little %d, \
     1.0, \
@@ -249,7 +257,7 @@ CREATE_TEST(28, \
     "%d", \
     179 \
 ) \
-CREATE_TEST(29, \
+CREATE_TEST(30, \
     medium %d, \
     medium %d, \
     1.0, \
@@ -257,7 +265,7 @@ CREATE_TEST(29, \
     "%d", \
     998244353 \
 ) \
-CREATE_TEST(30, \
+CREATE_TEST(31, \
     large %d, \
     large %d, \
     1.0, \
@@ -265,7 +273,7 @@ CREATE_TEST(30, \
     "%lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(31, \
+CREATE_TEST(32, \
     large %+d, \
     large %+d, \
     1.0, \
@@ -273,7 +281,7 @@ CREATE_TEST(31, \
     "%+lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(32, \
+CREATE_TEST(33, \
     large %5000d, \
     large %5000d, \
     1.0, \
@@ -281,7 +289,7 @@ CREATE_TEST(32, \
     "%5000lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(33, \
+CREATE_TEST(34, \
     large %+5000d, \
     large %+5000d, \
     1.0, \
@@ -289,7 +297,7 @@ CREATE_TEST(33, \
     "%+5000lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(34, \
+CREATE_TEST(35, \
     large %+05000d, \
     large %+05000d, \
     1.0, \
@@ -297,7 +305,7 @@ CREATE_TEST(34, \
     "%+05000lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(35, \
+CREATE_TEST(36, \
     large %+020d, \
     large %+020d, \
     1.0, \
@@ -305,7 +313,7 @@ CREATE_TEST(35, \
     "%+020lld", \
     18446744073709551615ull \
 ) \
-CREATE_TEST(36, \
+CREATE_TEST(37, \
     zero %x, \
     zero %x, \
     1.0, \
@@ -313,7 +321,7 @@ CREATE_TEST(36, \
     "%x", \
     0 \
 ) \
-CREATE_TEST(37, \
+CREATE_TEST(38, \
     little %x, \
     little %x, \
     1.0, \
@@ -321,7 +329,7 @@ CREATE_TEST(37, \
     "%x", \
     179 \
 ) \
-CREATE_TEST(38, \
+CREATE_TEST(39, \
     medium %x, \
     medium %x, \
     1.0, \
@@ -329,7 +337,7 @@ CREATE_TEST(38, \
     "%x", \
     998244353 \
 ) \
-CREATE_TEST(39, \
+CREATE_TEST(40, \
     large %x, \
     large %x, \
     1.0, \
@@ -337,7 +345,7 @@ CREATE_TEST(39, \
     "%llx", \
     18446744073609551615ull \
 ) \
-CREATE_TEST(40, \
+CREATE_TEST(41, \
     large %#x, \
     large %#x, \
     1.0, \
@@ -345,7 +353,7 @@ CREATE_TEST(40, \
     "%#llx", \
     18446744073609551615ull \
 ) \
-CREATE_TEST(41, \
+CREATE_TEST(42, \
     padded %x, \
     padded %x, \
     1.0, \
@@ -353,7 +361,7 @@ CREATE_TEST(41, \
     "%08x", \
     998244353 \
 ) \
-CREATE_TEST(42, \
+CREATE_TEST(43, \
     padded %llx, \
     padded %llx, \
     1.0, \
@@ -555,6 +563,24 @@ void test(int no_comparison)
         #undef FUNCTION
     };
 
+    double func_scores_avg[] = {
+        #define FUNCTION(id, xid, x) 0.0,
+        FUNCTIONS(0)
+        #undef FUNCTION
+    };
+
+    uint32_t func_medals[][3] = {
+        #define FUNCTION(id, xid, x) {},
+        FUNCTIONS(0)
+        #undef FUNCTION
+    };
+
+    double best_values[][3] = {
+        #define CREATE_TEST(...) {1e300, 1e300, 1e300},
+        TESTS
+        #undef CREATE_TEST
+    };
+
     const int SS = 4;
     
     int num_funcs = sizeof(func_names) / sizeof(func_names[0]);
@@ -569,6 +595,16 @@ void test(int no_comparison)
     TESTS
     #undef CREATE_TEST
 
+    for (int t = 0; t < test_count; ++t)
+    {
+        for (int f = 0; f < num_funcs; ++f)
+        {
+            best_values[t][0] = best_values[t][0] < res[t * 64 + f].min_cycles ? best_values[t][0] : res[t * 64 + f].min_cycles;
+            best_values[t][1] = best_values[t][1] < res[t * 64 + f].m50_cycles ? best_values[t][1] : res[t * 64 + f].m50_cycles;
+            best_values[t][2] = best_values[t][2] < res[t * 64 + f].avg_time ? best_values[t][2] : res[t * 64 + f].avg_time;
+        }
+    }
+
     for (int base = 0; base < test_count; base += SS)
     {
         printf("\n\n| %-26s |", "Realization \\ Test");
@@ -579,45 +615,74 @@ void test(int no_comparison)
         #undef CREATE_TEST
         printf("\n");
         
-        printf("|----------------------------|");
-        #define CREATE_TEST(id, ...) \
-            if (base <= id && id < base + SS) { \
-                printf("-----------------|"); }
-        TESTS
-        #undef CREATE_TEST
         printf("\n");
         for (int f = 0; f < num_funcs; f++) 
         {
+            #define START_COLOR(id) \
+                if (res[id * 64 + 0].min_cycles <= best_values[id][0] && \
+                    res[id * 64 + 0].m50_cycles <= best_values[id][1] && \
+                    res[id * 64 + 0].avg_time <= best_values[id][2]) \
+                { \
+                    printf("\x1b[48;2;0;70;0m"); \
+                } \
+                else if (res[id * 64 + 0].min_cycles <= best_values[id][0] || \
+                         res[id * 64 + 0].m50_cycles <= best_values[id][1] || \
+                         res[id * 64 + 0].avg_time <= best_values[id][2]) \
+                { \
+                    printf("\x1b[48;2;60;60;0m"); \
+                } \
+                else \
+                { \
+                    printf("\x1b[48;2;70;0;0m"); \
+                }
+
+            #define END_COLOR \
+                printf("\x1b[0m");
+            
+            if (base == 0)
+            {
+                printf("|----------------------------|");
+                #define CREATE_TEST(id, ...) \
+                    if (base <= id && id < base + SS) { START_COLOR(id) \
+                        printf("-----------------|"); END_COLOR }
+                TESTS
+                #undef CREATE_TEST
+            }
+            
             printf("| %-15s min cycles |", func_names[f]);
             #define CREATE_TEST(id, ...) \
-                if (base <= id && id < base + SS) { \
+                if (base <= id && id < base + SS) { START_COLOR(id) \
                     printf(" %11lu     |", res[id * 64 + f].min_cycles); \
-                    func_scores_min[f] += res[id * 64 + f].min_cycles; }
+                    func_scores_min[f] += res[id * 64 + f].min_cycles; \
+                    func_medals[f][0] += res[id * 64 + f].min_cycles <= best_values[id][0]; END_COLOR }
             TESTS
             #undef CREATE_TEST
             printf("\n");
         
             printf("| %-15s m50 cycles |", "");
             #define CREATE_TEST(id, ...) \
-                if (base <= id && id < base + SS) { \
+                if (base <= id && id < base + SS) { START_COLOR(id) \
                     printf(" %11lu     |", res[id * 64 + f].m50_cycles); \
-                    func_scores_m50[f] += res[id * 64 + f].m50_cycles; }
+                    func_scores_m50[f] += res[id * 64 + f].m50_cycles; \
+                    func_medals[f][1] += res[id * 64 + f].m50_cycles <= best_values[id][1]; END_COLOR }
             TESTS
             #undef CREATE_TEST
             printf("\n");
         
             printf("| %-15s avg time   |", "");
             #define CREATE_TEST(id, ...) \
-                if (base <= id && id < base + SS) { \
-                    printf(" %12.3f ns |", res[id * 64 + f].avg_time); }
+                if (base <= id && id < base + SS) { START_COLOR(id) \
+                    printf(" %12.3f ns |", res[id * 64 + f].avg_time); \
+                    func_scores_avg[f] += res[id * 64 + f].avg_time; \
+                    func_medals[f][2] += res[id * 64 + f].avg_time <= best_values[id][2]; END_COLOR }
             TESTS
             #undef CREATE_TEST
             printf("\n");
         
             printf("|----------------------------|");
             #define CREATE_TEST(id, ...) \
-                if (base <= id && id < base + SS) { \
-                    printf("-----------------|"); }
+                if (base <= id && id < base + SS) { START_COLOR(id) \
+                    printf("-----------------|"); END_COLOR }
             TESTS
             #undef CREATE_TEST
             printf("\n");
@@ -640,6 +705,14 @@ void test(int no_comparison)
         }
     }
 
+    for (int f = 0; f < num_funcs; ++f)
+    {
+        printf("function %-20s scored:\n", func_names[f]);
+        printf("        %3d medals in category min_cycles\n", func_medals[f][0]);
+        printf("        %3d medals in category m50_cycles\n", func_medals[f][1]);
+        printf("        %3d medals in category avg_time\n", func_medals[f][2]);
+    }
+
     printf("\nFunction scores: [min]\n");
     for (int f = 0; f < num_funcs; ++f)
     {
@@ -649,6 +722,11 @@ void test(int no_comparison)
     for (int f = 0; f < num_funcs; ++f)
     {
         printf("  %-20s: %10lu [%+10ld] %s\n", func_names[f], func_scores_m50[f], func_scores_m50[f] - best_score_m50, best_score_m50 < func_scores_m50[f] ? "" : "better!");
+    }
+    printf("Function scores: [avg]\n");
+    for (int f = 0; f < num_funcs; ++f)
+    {
+        printf("  %-20s: %12.2f ns\n", func_names[f], func_scores_avg[f]);
     }
     printf("\n");
 

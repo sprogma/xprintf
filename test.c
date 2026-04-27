@@ -271,6 +271,22 @@ int main()
     TEST_A(1024, "%10llX", 1000000000000000llu)
     TEST_A(1024, "%10llX", -1000000000000000llu)
 
+    // %p
+    TEST_A(1024, "%p", sprintf);
+    TEST_A(1024, "%p", xsprintf);
+    TEST_A(1024, "%16p", sprintf);
+    TEST_A(1024, "%16p", xsprintf);
+
+    // %z
+    TEST_A(1024, "%zu", sizeof(sprintf));
+    TEST_A(1024, "%zd", sizeof(xsprintf));
+    TEST_A(1024, "%16zd", sizeof(sprintf));
+    TEST_A(1024, "%16zu", sizeof(xsprintf));
+    TEST_A(1024, "%016zd", sizeof(sprintf));
+    TEST_A(1024, "%016zu", sizeof(xsprintf));
+    TEST_A(1024, "%016zx", sizeof(xsprintf));
+    TEST_A(1024, "%016zX", sizeof(xsprintf));
+
 
     printf("\n\n");
     if (total_errors == 0 && total_warings == 0)

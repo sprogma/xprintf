@@ -158,9 +158,15 @@ end if
 .update_flag_long_loop:
     cmp al, 'l'
     je .update_flag_long
+    
+    cmp al, 'z'
+    je .update_flag_long_end
+    
 .update_flag_short_loop:
     cmp al, 'h'
     je .update_flag_short
+    
+.update_flag_end:
     
     ; eax is already loaded
     mov ecx, F_CAPITAL
@@ -178,6 +184,12 @@ end if
     add r14, 1
     movzx eax, byte [r14]
     jmp .update_flag_long_loop
+
+.update_flag_long_end:
+    or rdi, F_LONG
+    add r14, 1
+    movzx eax, byte [r14]
+    jmp .update_flag_end
 
 .update_flag_short:
     or rdi, F_SHORT
@@ -1274,6 +1286,10 @@ end if
 
 ; --------------------------------------------------------- percent -----------------------------------------------------------
 
+.switch_hex_pointer:
+    or rdi, F_ALTERNATE
+    mov rax, [rbx]
+    jmp .integer_hex_int64_from_32
 .switch_hex_integer:
     mov rax, [rbx]
     test rdi, F_LONG
@@ -1654,7 +1670,7 @@ final_jump_table:
     dq fn_name#.switch_default; 'M'
     dq fn_name#.switch_default; 'N'
     dq fn_name#.switch_default; 'O'
-    dq fn_name#.switch_default; 'P'
+    dq fn_name#.switch_hex_pointer; 'P'
     dq fn_name#.switch_default; 'Q'
     dq fn_name#.switch_default; 'R'
     dq fn_name#.switch_string; 'S'
